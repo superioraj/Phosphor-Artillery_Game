@@ -1,1114 +1,252 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PHOSPHOR ARTILLERY 3.4</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" async></script>
-<style>
-:root{color-scheme:dark;--fg:#33ff33;--dim:#1eaa38;--br:#b0ffb0;--ln:#238a35;--bad:#ff8a8a}
-*{box-sizing:border-box}body{margin:0;background:#000;color:var(--fg);font:15px/1.55 Consolas,'Courier New',monospace;text-shadow:0 0 3px rgba(51,255,51,.35)}
-main{max-width:1320px;margin:auto;padding:18px}
-header{border-bottom:3px double var(--fg);padding-bottom:10px;display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap}
-h1{font-size:clamp(20px,3vw,30px);margin:4px 0;letter-spacing:2px}h2{font-size:14px;margin:0 0 8px;letter-spacing:1px}p{margin:6px 0}
-.dim{color:var(--dim)}.small{font-size:12px}
-.cursor{display:inline-block;width:.6em;height:1em;background:var(--fg);vertical-align:text-bottom;animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
-.hbtns{display:flex;gap:8px;flex-wrap:wrap}.hbtns button{white-space:nowrap;flex:0 0 auto}
-.mbbar{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;border-bottom:1px dashed var(--ln);padding:6px 0;font-size:13px}
-.mbbar .radio{margin:0}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px}.setup{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.panel{border:3px double var(--ln);padding:12px;min-width:0}
-.hud{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;padding-bottom:8px;font-size:13px}
-.field{position:relative;border:1px solid var(--fg);overflow:hidden;line-height:0}
-.field:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0,transparent 3px,rgba(0,0,0,.18) 4px)}
-canvas{display:block;width:100%;height:auto;aspect-ratio:1000/520;touch-action:manipulation}
-.status{min-height:44px;padding:8px 10px;border-left:3px solid var(--fg);margin:10px 0 4px;background:#061107;overflow-wrap:anywhere}
-.error{color:var(--bad);min-height:1.5em;font-size:13px;margin-top:6px}
-button,select,input{font:inherit;color:var(--fg);background:#000;border:1px solid var(--fg);border-radius:0}
-button{min-height:42px;padding:6px 10px;cursor:pointer}button:hover:not(:disabled){background:var(--fg);color:#000;text-shadow:none}
-button:disabled,select:disabled,input:disabled{opacity:.4;cursor:not-allowed}
-.hold{touch-action:none;user-select:none;-webkit-user-select:none}
-:focus-visible{outline:2px dotted var(--br);outline-offset:3px}
-select{min-height:40px;width:100%;padding:4px}input[type=range]{width:100%;accent-color:var(--fg);min-height:30px;border:0}
-.codein{width:100%;min-height:48px;padding:4px 10px;font-size:26px;letter-spacing:10px;text-transform:uppercase;text-align:center}
-.roomcode{font-size:34px;letter-spacing:12px;text-align:center;border:1px dashed var(--fg);padding:6px;margin:8px 0;color:var(--br)}
-label,.label{display:block;margin:8px 0 2px}
-.radio{display:flex;gap:8px;align-items:center;margin:6px 0;cursor:pointer}.radio input{accent-color:var(--fg);width:18px;height:18px;margin:0;flex:none}
-fieldset{border:1px solid var(--ln);padding:10px;margin:0 0 12px;min-width:0}legend{padding:0 6px}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 0;min-width:0}.full{width:100%}
-.fire{background:var(--fg);color:#000;font-weight:bold;font-size:18px;margin-top:10px;text-shadow:none}.fire:disabled{background:#000;color:var(--fg)}
-.badge{background:var(--fg);color:#000;padding:1px 7px;display:inline-block;font-weight:bold;text-shadow:none}
-.tank{padding:7px 0;border-bottom:1px dashed var(--ln);font-size:13px}.tank.on{color:var(--br)}
-.bar{height:5px;background:#0b2810;margin-top:4px}.bar span{display:block;height:100%;background:var(--fg)}
-.log{font-size:13px;max-height:130px;overflow:auto;margin:6px 0 0;padding-left:22px}.meter{letter-spacing:2px}
-.request{border:1px solid var(--br);padding:8px;margin-top:10px}
-.help{margin-top:14px}.help summary{cursor:pointer;font-weight:bold;letter-spacing:1px}
-.help .grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:8px}
-.help h3{font-size:14px;margin:16px 0 6px;padding-bottom:3px;border-bottom:1px dashed var(--ln);color:var(--br)}
-.help ol,.help ul{margin:4px 0;padding-left:22px}.help li{margin:3px 0}
-.tw{overflow-x:auto}table.t{width:100%;border-collapse:collapse;font-size:13px}
-table.t th,table.t td{border-bottom:1px dashed var(--ln);padding:4px 6px;text-align:left;vertical-align:top}table.t th{color:var(--br);font-weight:normal}
-kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;font-size:12px;white-space:nowrap}
-.mk{display:inline-block;min-width:22px;text-align:center;border:1px solid var(--br);color:var(--br)}
-.hidden{display:none!important}footer{font-size:12px;color:var(--dim);margin-top:16px;border-top:1px solid var(--ln);padding-top:8px}
-@media(max-width:940px){.layout,.setup,.help .grid{grid-template-columns:1fr}}
-@media(max-width:520px){main{padding:8px}.panel{padding:8px}.hud{font-size:12px}button{min-height:44px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
-</style>
-</head>
-<body><main>
-<header>
-<div><div class="dim">C:\GAMES&gt; PHOSPHOR.EXE<span class="cursor" aria-hidden="true"></span></div>
-<h1>PHOSPHOR ARTILLERY</h1><span class="dim">v3.4 / 3선승 포격전 / AI LV 1-10 / ONLINE 1:1 / micro:bit</span></div>
-<div class="hbtns">
-<button id="helpButton" type="button">[ F1 ] 도움말</button><button id="menuButton" type="button">[ F2 ] 메뉴</button><button id="mbButton" type="button" aria-pressed="false">[ micro:bit 연결 ]</button>
-</div>
-</header>
-<div class="mbbar" aria-label="micro:bit 상태">
-<span id="mbStatus" role="status" aria-live="polite">micro:bit 미연결</span>
-<span id="mbTilt" class="dim">PITCH -- / ROLL --</span>
-<span id="mbKey" class="dim"></span>
-<label class="radio"><input type="checkbox" id="mbPitchInv"> 위/아래 반전</label>
-<label class="radio"><input type="checkbox" id="mbRollInv"> 좌/우 반전</label>
-</div>
-<noscript>이 게임은 JavaScript를 활성화해야 실행됩니다.</noscript>
-<div id="error" class="error" role="alert"></div>
+# PHOSPHOR ARTILLERY
 
-<section id="setup" class="setup" aria-label="게임 설정">
-<div class="panel">
-<h2>[ MISSION SETUP ]</h2>
-<fieldset><legend>[ 게임 방식 ]</legend>
-<label class="radio"><input type="radio" name="mode" value="ai" checked> 1인 + AI 대전</label>
-<label class="radio"><input type="radio" name="mode" value="local"> 같은 기기에서 교대</label>
-<label class="radio"><input type="radio" name="mode" value="online"> 온라인 1:1 (방 코드 5자리)</label>
-</fieldset>
-<div id="localOptions">
-<label for="count">전차 수</label>
-<select id="count"><option value="2">2대</option><option value="3">3대</option><option value="4">4대</option></select>
-<div id="levelBox">
-<label for="level">AI 난이도 <output id="levelValue">5</output> / 10</label>
-<input id="level" type="range" min="1" max="10" step="1" value="5">
-<p id="levelMeter" class="meter" aria-hidden="true"></p><p id="levelDesc" class="dim small"></p>
-</div>
-<button id="startButton" type="button" class="full fire">[ ENTER / A+B ] 전투 시작</button>
-</div>
-<p id="onlineHint" class="dim small hidden">온라인은 오른쪽 패널에서 연결이 완료되면 자동으로 시작됩니다.</p>
-</div>
-<div class="panel hidden" id="onlinePanel">
-<h2>[ ONLINE 1:1 LINK ]</h2>
-<div class="row"><button id="hostButton" type="button">[ 방 만들기 / HOST ]</button><button id="joinButton" type="button">[ 방 참가 / GUEST ]</button></div>
-<div id="hostBox" class="hidden">
-<p class="label">방 코드 (상대에게 알려주세요)</p>
-<div id="roomCode" class="roomcode" aria-live="polite">-----</div>
-<button id="copyButton" type="button" class="full">[ 방 코드 복사 ]</button>
-<div id="requestBox" class="request hidden" role="group" aria-label="접속 요청">
-<p>상대가 접속을 요청했습니다.</p>
-<div class="row"><button id="acceptButton" type="button" class="fire" style="margin-top:0">[ 허용 ]</button><button id="rejectButton" type="button">[ 거절 ]</button></div>
-</div>
-</div>
-<div id="guestBox" class="hidden">
-<label for="joinCode">호스트에게 받은 방 코드</label>
-<input id="joinCode" class="codein" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE">
-<button id="connectButton" type="button" class="full fire">[ 접속 ]</button>
-</div>
-<div id="netStatus" class="status" role="status" aria-live="polite">[방 만들기] 또는 [방 참가]를 누르세요.</div>
-<p class="dim small">연결을 시작할 때 무료 공개 중계 서버(PeerJS)를 사용합니다. 연결 과정에서 IP 주소가 중계 서버에 전달됩니다. 게임 데이터는 보통 두 브라우저 사이에서 직접 오가며, 직접 연결이 막힌 네트워크에서는 중계 서버를 거칠 수 있습니다. 서버 상태에 따라 연결되지 않을 수 있습니다.</p>
-</div>
-</section>
+> 1980년대 DOS 녹색 CRT 화면 스타일의 턴제 포격 게임  
+> 브라우저에서 바로 실행되며, micro:bit 블루투스 제어와 온라인 1:1 대전을 지원합니다.
 
-<div id="game" class="layout hidden">
-<section class="panel" aria-label="전장">
-<div class="hud"><span id="roundText"></span><span id="modeText"></span><span id="windText"></span><span id="shotText"></span></div>
-<div class="field"><canvas id="battle" width="1000" height="520" role="img" aria-label="포격 전장">Canvas를 지원하는 브라우저가 필요합니다.</canvas></div>
-<div id="status" class="status" role="status" aria-live="polite"></div>
-<button id="roundAction" type="button" class="full fire hidden">[ ENTER / 로고 터치 ] 다음 라운드</button>
-<h2 style="margin-top:12px">[ COMBAT LOG ]</h2><ol id="log" class="log" aria-label="최근 전투 기록"></ol>
-</section>
-<aside class="panel">
-<fieldset><legend>[ 사격 통제 ]</legend>
-<div id="pilot" class="badge"></div>
-<label for="angle">각도 <output id="angleValue"></output></label><input id="angle" type="range" min="0" max="180" step="1" value="45">
-<label for="power">위력 <output id="powerValue"></output></label><input id="power" type="range" min="100" max="1000" step="10" value="550">
-<label for="weapon">포탄 (1-4 / micro:bit B)</label>
-<select id="weapon"><option value="shell">1 기본탄</option><option value="heavy">2 중포탄</option><option value="split">3 분열탄</option><option value="quake">4 지진탄</option></select>
-<p class="label">이동 연료 <output id="fuelValue"></output></p>
-<div class="bar" aria-hidden="true"><span id="fuelBar" style="width:100%"></span></div>
-<div class="row" style="margin-top:8px"><button id="moveLeft" type="button" class="hold">[ A ] &lt; 왼쪽</button><button id="moveRight" type="button" class="hold">오른쪽 &gt; [ D ]</button></div>
-<p class="dim small">이동: 누르고 있는 동안 계속 전진</p>
-<button id="fire" type="button" class="full fire">[ SPACE ] 발사</button>
-</fieldset>
-<h2>[ 전차 ]</h2><div id="roster"></div>
-</aside>
-</div>
+**플레이:** https://<사용자이름>.github.io/<저장소이름>/
 
-<details id="help" class="panel help"><summary>[ README.TXT / 게임 규칙 ]</summary>
-<div class="grid">
-<section>
-<h3>01. 목표</h3>
-<p>마지막까지 살아남으면 <b>라운드 승리</b>. 먼저 <b>3승</b>하면 경기 승리입니다.</p>
-<h3>02. 한 차례의 흐름</h3>
-<ol><li><b>이동</b> - A/D를 누르고 있으면 연료를 쓰며 이동</li><li><b>조준</b> - 각도와 위력 조절</li><li><b>포탄 선택</b> - 숫자 1~4</li><li><b>발사</b> - SPACE. 발사하면 차례 종료</li></ol>
-<h3>03. 조작 키</h3>
-<div class="tw"><table class="t">
-<tr><th>키</th><th>동작</th></tr>
-<tr><td><kbd>A</kbd> <kbd>D</kbd></td><td>누르는 동안 왼쪽 / 오른쪽 이동</td></tr>
-<tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>각도 &plusmn;1&deg; (SHIFT: &plusmn;5&deg;)</td></tr>
-<tr><td><kbd>&uarr;</kbd> <kbd>&darr;</kbd></td><td>위력 &plusmn;10 (SHIFT: &plusmn;50)</td></tr>
-<tr><td><kbd>1</kbd>~<kbd>4</kbd></td><td>포탄 선택</td></tr>
-<tr><td><kbd>SPACE</kbd></td><td>발사</td></tr>
-<tr><td><kbd>ENTER</kbd></td><td>전투 시작 / 다음 라운드</td></tr>
-<tr><td><kbd>F1</kbd> <kbd>F2</kbd></td><td>도움말 / 메뉴</td></tr>
-</table></div>
-<p class="dim small">터치 화면: 이동 버튼을 길게 누르면 계속 이동합니다.</p>
-<h3>04. 포탄</h3>
-<div class="tw"><table class="t">
-<tr><th>포탄</th><th>특징</th><th>지급</th></tr>
-<tr><td>1 기본탄</td><td>반경 26 / 피해 55</td><td>무제한</td></tr>
-<tr><td>2 중포탄</td><td>반경 45 / 피해 80</td><td>라운드 1발 (최대 4)</td></tr>
-<tr><td>3 분열탄</td><td>최고점에서 3갈래 / 반경 21 / 각 36</td><td>라운드 1발 (최대 4)</td></tr>
-<tr><td>4 지진탄</td><td>반경 67 구덩이 / 피해 24 / 추락 유도</td><td>보급만 (최대 3)</td></tr>
-</table></div>
-<p class="dim small">폭발은 둥근 구덩이를 만들고, 위쪽 흙은 아래로 내려앉습니다.</p>
-<h3>05. 전장 규칙</h3>
-<ul><li>이동 연료: 매 차례 48 (연료 2배 시 96)</li><li>바람은 매 차례 조금씩 변함</li><li>발밑 지형이 파이면 추락 피해</li><li>30발 이후 모든 피해 2배 (서든데스)</li><li>60발 도달 시 무승부</li><li>포구 앞 점선 = 초반 탄도 가이드</li></ul>
-<h3>06. micro:bit 제어</h3>
-<div class="tw"><table class="t">
-<tr><th>micro:bit</th><th>동작</th></tr>
-<tr><td>위/아래 기울기</td><td>각도 조절 (많이 기울일수록 빠름)</td></tr>
-<tr><td>좌/우 기울기</td><td>탱크 이동 (연료 소모)</td></tr>
-<tr><td>A 버튼</td><td>발사</td></tr>
-<tr><td>B 버튼</td><td>포탄 변경</td></tr>
-<tr><td>A+B 버튼</td><td>전투 시작 (설정 화면)</td></tr>
-<tr><td>로고 터치</td><td>다음 라운드 / 새 경기</td></tr>
-</table></div>
-<p class="dim small">위력은 키보드나 슬라이더로 조절합니다. 기울이는 방향이 반대로 움직이면 상단의 반전 옵션을 켜세요.</p>
-</section>
-<section>
-<h3>07. 보급 헬기 / 상자 10종</h3>
-<p>라운드 시작과 3발마다 헬기가 투하 (최대 2개). 헬기와 낙하산은 <b>바람에 밀립니다</b>. 투하 중에는 행동할 수 없습니다.<br>획득: 전차로 지나가기 / 포탄·폭발로 맞히기</p>
-<div class="tw"><table class="t">
-<tr><th>표시</th><th>이름</th><th>효과</th><th>확률</th></tr>
-<tr><td><span class="mk">H</span></td><td>중포탄</td><td>중포탄 +1</td><td>12%</td></tr>
-<tr><td><span class="mk">S</span></td><td>분열탄</td><td>분열탄 +1</td><td>11%</td></tr>
-<tr><td><span class="mk">Q</span></td><td>지진탄</td><td>지진탄 +1</td><td>8%</td></tr>
-<tr><td><span class="mk">+</span></td><td>수리</td><td>체력 +25</td><td>12%</td></tr>
-<tr><td><span class="mk">O</span></td><td>방어막</td><td>방어막 +35</td><td>10%</td></tr>
-<tr><td><span class="mk">F</span></td><td>연료 2배</td><td>다음 차례 연료 96</td><td>11%</td></tr>
-<tr><td><span class="mk">C</span></td><td>무풍탄</td><td>다음 1발 바람 무시</td><td>9%</td></tr>
-<tr><td><span class="mk">L</span></td><td>정밀 조준경</td><td>다음 발사까지 탄도 전체 표시</td><td>10%</td></tr>
-<tr><td><span class="mk">P</span></td><td>강화탄</td><td>다음 1발 피해 1.5배</td><td>8%</td></tr>
-<tr><td><span class="mk">!</span></td><td>함정 상자</td><td>밟으면 피해 15 / 맞히면 폭발</td><td>9%</td></tr>
-</table></div>
-<h3>08. AI 난이도 1~10</h3>
-<ul><li><b>1~2</b> 조준 오차 큼, 바람 거의 무시</li><li><b>3~4</b> 바람 일부 계산, 보급 상자를 노려 이동</li><li><b>5~7</b> 고지대 이동, 함정 회피, 약한 전차 우선</li><li><b>8~10</b> 정확한 바람 계산, 특수탄 적극 사용</li></ul>
-<h3>09. 온라인 1:1</h3>
-<ol><li>두 사람 모두 <b>온라인 1:1</b> 선택</li><li>HOST: [방 만들기] &rarr; 5자리 방 코드를 상대에게 알려주기</li><li>GUEST: [방 참가] &rarr; 방 코드 입력 &rarr; [접속]</li><li>HOST: 접속 요청이 오면 [허용] &rarr; 자동 시작</li></ol>
-<p class="dim small">두 사람 모두 같은 v3.4 파일을 사용해야 합니다. 연결 시작에 무료 공개 중계 서버(PeerJS)를 사용하므로 인터넷이 필요하며, 서버 상태나 학교·회사 방화벽에 따라 연결되지 않을 수 있습니다.</p>
-<h3>10. 효과</h3>
-<p>폭발 흔들림·섬광·파편, 포탄 연기, 이동 먼지, 바퀴 회전, 바람 줄기, 손상 연기, 헬기 애니메이션이 항상 표시됩니다. 운영체제의 동작 줄이기 설정을 켜면 자동으로 줄어듭니다.</p>
-</section>
-</div>
-</details>
-<footer>PHOSPHOR ARTILLERY 3.4 / 독립 구현 / 브라우저 내부 처리 / 쿠키·저장 없음 / 온라인 대전 시에만 PeerJS 중계 서버 사용 / micro:bit는 Web Bluetooth로 직접 연결</footer>
-</main>
-<script>
-(()=>{'use strict';
-const $=id=>document.getElementById(id);
-const canvas=$('battle'),ctx=canvas.getContext('2d');
-if(!ctx){$('error').textContent='Canvas를 사용할 수 없습니다.';return;}
-const W=1000,H=520,DT=1/90,GRAV=110,TARGET=3,SUDDEN=30,LIMIT=60,FUEL=48,SEG=8,DRIVE=72,HOLD_MS=110,SAMPLE=3,SPEED=162,MAXSTEP=3000,CHUNK=12000,VER=34;
-const WEAPONS={shell:{name:'기본탄',r:26,dmg:55},heavy:{name:'중포탄',r:45,dmg:80},split:{name:'분열탄',r:21,dmg:36},quake:{name:'지진탄',r:67,dmg:24},trap:{name:'함정 폭발',r:24,dmg:20}};
-const WKEYS=['shell','heavy','split','quake'],AMMO_CAP={heavy:4,split:4,quake:3};
-const SUPPLY={heavy:{mark:'H',name:'중포탄',w:12},split:{mark:'S',name:'분열탄',w:11},quake:{mark:'Q',name:'지진탄',w:8},repair:{mark:'+',name:'수리',w:12},shield:{mark:'O',name:'방어막',w:10},fuel:{mark:'F',name:'연료 2배',w:11},calm:{mark:'C',name:'무풍탄',w:9},scope:{mark:'L',name:'정밀 조준경',w:10},power:{mark:'P',name:'강화탄',w:8},trap:{mark:'!',name:'함정 상자',w:9}};
-const SKEYS=Object.keys(SUPPLY),STOTAL=SKEYS.reduce((s,k)=>s+SUPPLY[k].w,0);
-const RANKS=['훈련병','이병','일병','상병','병장','하사','중사','상사','원사','전설'];
-const has=(o,k)=>Object.prototype.hasOwnProperty.call(o,k),clamp=(n,a,b)=>Math.min(b,Math.max(a,n)),r1=v=>Math.round(v*10)/10,clone=o=>JSON.parse(JSON.stringify(o)),isNum=Number.isFinite;
-const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
-const newBuff=()=>({fuel:false,calm:false,scope:false,power:false});
-let S=null,raf=0,lastFrame=0,lastLag=false,lastTurn='';
-let play=null,inbox=[],helis=[],seen=new Set(),seenPick=new Set(),blasts=[],particles=[],pops=[],streaks=[],shake=null,muzzleFx=null,wasDropping=false;
-let vis=[],visKey='',aiTimer=0,aiToken=0,aiMoving=false,pendingAct=false,pendingTimer=0;
-const hold={dir:0,timer:0};
-const PEER_PREFIX='phosphor-art34-',CODE_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',CODE_LEN=5;
-const net={role:'off',peer:null,ch:null,pending:null,accepted:false,code:'',chunks:new Map(),aimT:0};
-const mb={dev:null,ch:null,buf:'',pitch:0,roll:0,last:0,moveDir:0,acc:0,timer:0};
-const fxOn=()=>!motion.matches,active=()=>S?S.tanks.at(S.current):null,groundOf=(ter,x)=>ter[clamp(Math.round(x),0,W-1)];
-const sudden=st=>st.shots>SUDDEN,windText=w=>w===0?'무풍':(w>0?'오른쪽 ':'왼쪽 ')+Math.abs(w);
-const netOpen=()=>!!(net.ch&&net.ch.open&&net.accepted),gameVisible=()=>!$('game').classList.contains('hidden');
-function addLog(st,s){st.log.unshift(s);if(st.log.length>14)st.log.length=14;}
-function fail(s){$('error').textContent=s||'';}
-function setText(id,s){const el=$(id);if(el.textContent!==s)el.textContent=s;}
+**버전:** v3.4
 
-/* 지형 / 상태 */
-function makeTerrain(){const a=Math.random()*6,b=Math.random()*6;return Array.from({length:W},(_,x)=>Math.round(clamp(340+Math.sin(x/150+a)*60+Math.sin(x/69+b)*25+Math.cos(x/330)*35,215,445)));}
-function carve(ter,x,y,r){
- for(let ix=Math.max(0,Math.floor(x-r));ix<=Math.min(W-1,Math.ceil(x+r));ix++){
-  const dx=ix-x,d=Math.sqrt(Math.max(0,r*r-dx*dx));if(d<=0)continue;
-  const cut=Math.max(0,(y+d)-Math.max(ter[ix],y-d));
-  if(cut>0)ter[ix]=Math.min(H-12,Math.round(ter[ix]+cut));
- }
-}
-function settle(st,fall){const out=[];for(const t of st.tanks){if(t.hp<=0)continue;const old=t.y;t.y=groundOf(st.terrain,t.x)-6;const drop=t.y-old;if(fall&&drop>20){const d=Math.round((drop-20)*.7);t.hp=Math.max(0,t.hp-d);out.push(t.name+' 추락 피해 '+d+(t.hp===0?' / 격파':''));}}for(const c of st.crates)c.y=groundOf(st.terrain,c.x);return out;}
-function hurt(t,dmg){const ab=Math.min(t.shield,dmg);t.shield-=ab;const d=dmg-ab;t.hp=Math.max(0,t.hp-d);return{d,ab};}
-function makeGame(cfg){
- const mode=['ai','local','online'].includes(cfg.mode)?cfg.mode:'ai',n=mode==='online'?2:clamp(Math.round(Number(cfg.count))||2,2,4),level=clamp(Math.round(Number(cfg.level))||5,1,10);
- const st={v:VER,gid:Math.random().toString(36).slice(2,10),mode,level,round:1,shots:0,wind:0,current:0,phase:'aim',matchOver:false,winner:-1,terrain:[],tanks:[],crates:[],crateSeq:0,fxq:[],fxSeq:0,log:[]};
- for(let i=0;i<n;i++){let name='TANK '+(i+1);if(mode==='online')name=i===0?'P1 HOST':'P2 GUEST';else if(mode==='ai')name=i===0?'PLAYER':'AI-'+i;
-  st.tanks.push({name,base:90+i*(820/(n-1)),x:0,y:0,hp:100,shield:0,wins:0,ai:mode==='ai'&&i>0,angle:i<n/2?45:135,power:550,ammo:{heavy:1,split:1,quake:0},buff:newBuff(),fuel:0,fuelMax:FUEL,trace:[],focus:0,lastTarget:-1});}
- addLog(st,'새 경기 / '+(mode==='ai'?'AI 난이도 '+level+' '+RANKS.at(level-1):mode==='local'?'로컬 교대':'온라인 1:1')+' / '+TARGET+'선승');
- startRound(st);return st;
-}
-function startRound(st){
- st.terrain=makeTerrain();st.crates=[];
- for(const t of st.tanks){t.x=clamp(Math.round(t.base+Math.random()*60-30),20,W-20);t.y=0;t.hp=100;t.shield=0;t.ammo={heavy:1,split:1,quake:0};t.buff=newBuff();t.fuel=0;t.fuelMax=FUEL;t.trace=[];t.focus=0;t.lastTarget=-1;}
- settle(st,false);st.shots=0;st.current=(st.round-1)%st.tanks.length;st.wind=Math.round(Math.random()*30-15);st.phase='aim';st.winner=-1;
- addLog(st,'ROUND '+st.round+' 시작 / 바람 '+windText(st.wind));giveFuel(st);spawnCrate(st);
-}
-function giveFuel(st){const t=st.tanks.at(st.current);if(!t)return;const x2=t.buff.fuel;t.fuel=FUEL*(x2?2:1);t.fuelMax=t.fuel;t.buff.fuel=false;if(x2)addLog(st,t.name+' 연료 2배 사용 ('+t.fuel+')');}
-function pickType(){let r=Math.random()*STOTAL;for(const k of SKEYS){r-=SUPPLY[k].w;if(r<0)return k;}return 'repair';}
-function spawnCrate(st){
- if(st.crates.length>=2)return;
- for(let k=0;k<40;k++){const x=Math.round(60+Math.random()*(W-120));
-  if(st.tanks.some(t=>t.hp>0&&Math.abs(t.x-x)<60)||st.crates.some(c=>Math.abs(c.x-x)<60))continue;
-  const c={id:st.gid+':'+(st.crateSeq++),x,y:groundOf(st.terrain,x),type:pickType(),dir:Math.random()<.5?1:-1};
-  st.crates.push(c);addLog(st,'보급 헬기 투하: '+SUPPLY[c.type].mark+' '+SUPPLY[c.type].name);return;}
-}
-function pushFx(st,x,y,text){st.fxSeq++;st.fxq.push({id:st.gid+':f'+st.fxSeq,n:st.fxSeq,x:Math.round(x),y:Math.round(y),text:String(text).slice(0,40)});if(st.fxq.length>8)st.fxq.shift();}
-function collect(st,t,c){
- if(!t||t.hp<=0){addLog(st,'보급 상자 파괴');return;}
- const s=SUPPLY[c.type];
- switch(c.type){
-  case 'heavy':case 'split':case 'quake':t.ammo[c.type]=Math.min(AMMO_CAP[c.type],t.ammo[c.type]+1);break;
-  case 'repair':t.hp=Math.min(100,t.hp+25);break;
-  case 'shield':t.shield=Math.min(100,t.shield+35);break;
-  case 'fuel':case 'calm':case 'scope':case 'power':t.buff[c.type]=true;break;
-  case 'trap':{const r=hurt(t,15);addLog(st,t.name+' 함정 상자! -'+r.d+(t.hp===0?' / 격파':''));pushFx(st,t.x,t.y-36,'TRAP -'+r.d);return;}
-  default:return;
- }
- addLog(st,t.name+' 보급 획득: '+s.name);pushFx(st,t.x,t.y-36,s.mark+' '+s.name);
-}
-const canUse=(t,w)=>w==='shell'||(WKEYS.includes(w)&&has(t.ammo,w)&&t.ammo[w]>0);
-function buffText(t){const b=[];if(t.buff.fuel)b.push('연료x2');if(t.buff.calm)b.push('무풍');if(t.buff.scope)b.push('조준경');if(t.buff.power)b.push('강화');return b.join(' ');}
+---
 
-/* 탄도 */
-function muzzle(t,a){const r=a*Math.PI/180;return{x:t.x+Math.cos(r)*18,y:t.y-6-Math.sin(r)*18};}
-function launch(t,a,p){const r=a*Math.PI/180,v=80+p*.44,m=muzzle(t,a);return{x:m.x,y:m.y,vx:Math.cos(r)*v,vy:-Math.sin(r)*v};}
-function collide(st,p,step){
- if(p.x<0||p.x>=W||p.y>H+40)return{type:'miss',tank:-1};
- if(step>5)for(let i=0;i<st.tanks.length;i++){const t=st.tanks.at(i);if(t.hp>0&&Math.hypot(p.x-t.x,p.y-(t.y-4))<12)return{type:'tank',tank:i};}
- for(const c of st.crates)if(Math.hypot(p.x-c.x,p.y-(c.y-8))<12)return{type:'crate',tank:-1};
- if(p.y>=groundOf(st.terrain,p.x))return{type:'ground',tank:-1};return null;
-}
-function explode(st,owner,x,y,weapon,direct,step,mods,depth){
- const s=WEAPONS[weapon]||WEAPONS.shell,mult=(sudden(st)?2:1)*(weapon==='trap'?1:mods.mult),o=st.tanks.at(owner),hits=[],dm=[],seq0=st.fxSeq;
- st.tanks.forEach((t,i)=>{if(t.hp<=0)return;const d=Math.hypot(t.x-x,t.y-4-y);if(d>=s.r+12&&i!==direct)return;
-  const base=i===direct?s.dmg:s.dmg*clamp(1-d/(s.r+12),.15,1),r=hurt(t,Math.round(base*mult));
-  dm.push({i,d:r.d,a:r.ab});hits.push(t.name+' -'+r.d+(r.ab?' (방어 '+r.ab+')':'')+(t.hp===0?' 격파':''));});
- carve(st.terrain,x,y,s.r);
- const cr=[],traps=[];
- st.crates=st.crates.filter(c=>{if(Math.hypot(c.x-x,c.y-8-y)<s.r+10){cr.push(c.id);if(c.type==='trap')traps.push(c);else collect(st,o,c);return false;}return true;});
- const falls=settle(st,true);
- if(hits.length)addLog(st,(weapon==='trap'?'함정 폭발: ':'')+hits.join(' / '));falls.forEach(l=>addLog(st,l));
- const pk=st.fxq.filter(q=>q.n>seq0).map(q=>({...q}));
- const out=[{step,x:r1(x),y:r1(y),r:s.r,hp:st.tanks.map(t=>t.hp),ty:st.tanks.map(t=>t.y),sh:st.tanks.map(t=>t.shield),cr,dm,pk}];
- if(depth<3)for(const c of traps)out.push(...explode(st,owner,c.x,c.y-8,'trap',-1,step,mods,depth+1));
- return out;
-}
-function simulateShot(st,idx,weapon,mods){
- const t=st.tanks.at(idx),l=launch(t,t.angle,t.power);
- let projs=[{x:l.x,y:l.y,vx:l.vx,vy:l.vy,start:0,child:false,pts:[[r1(l.x),r1(l.y)]]}];
- const paths=[],events=[];let step=0,main=null;
- while(projs.length&&step<MAXSTEP){step++;const next=[];
-  for(const p of projs){const pvy=p.vy;p.vx+=mods.wind*DT;p.vy+=GRAV*DT;p.x+=p.vx*DT;p.y+=p.vy*DT;
-   if((step-p.start)%SAMPLE===0)p.pts.push([r1(p.x),r1(p.y)]);
-   if(weapon==='split'&&!p.child&&pvy<0&&p.vy>=0){p.pts.push([r1(p.x),r1(p.y)]);paths.push({start:p.start,end:step,pts:p.pts});main=p.pts;
-    for(const dv of[-45,0,45])next.push({x:p.x,y:p.y,vx:p.vx+dv,vy:p.vy,start:step,child:true,pts:[[r1(p.x),r1(p.y)]]});continue;}
-   const hit=collide(st,p,step);if(!hit){next.push(p);continue;}
-   p.pts.push([r1(p.x),r1(p.y)]);paths.push({start:p.start,end:step,pts:p.pts});if(!p.child)main=p.pts;
-   if(hit.type==='miss'){if(!p.child)addLog(st,t.name+' 빗나감');continue;}
-   events.push(...explode(st,idx,p.x,Math.min(p.y,H-1),weapon,hit.tank,step,mods,0));}
-  projs=next;}
- for(const p of projs)paths.push({start:p.start,end:step,pts:p.pts});
- t.trace=main?main.slice():[];return{paths,events,steps:step};
-}
+## 소개
 
-/* 권한 / 행동 */
-const isAuthority=()=>net.role!=='guest';
-function isMine(i){if(!S)return false;if(S.mode==='online')return net.role==='host'?i===0:net.role==='guest'?i===1:false;const t=S.tanks.at(i);return !!t&&!t.ai;}
-const heliDropping=(now=performance.now())=>helis.some(h=>now-h.start<2100);
-const busy=()=>!!play||heliDropping();
-const canAct=()=>!!S&&S.phase==='aim'&&!busy()&&!aiMoving&&!pendingAct&&isMine(S.current)&&(S.mode!=='online'||netOpen());
-const canAdvance=()=>!!S&&S.phase==='over'&&!play&&!pendingAct&&(S.mode!=='online'||netOpen());
-function applyAction(idx,a){
- if(!S||!a||typeof a!=='object')return '잘못된 명령입니다.';
- if(a.type==='next'){if(S.phase==='over'&&!play)advanceRound();return '';}
- if(S.current!==idx)return '지금은 상대 차례입니다.';
- if(a.type==='move')return doMove(idx,a.dir,false);
- if(a.type==='fire')return doFire(idx,a);
- return '알 수 없는 명령입니다.';
-}
-function stepBlock(st,t,x,nx){
- if(nx<15||nx>W-15)return '전장 끝입니다.';
- if(groundOf(st.terrain,nx)<groundOf(st.terrain,x)-2)return '경사가 너무 가파릅니다.';
- if(st.tanks.some(o=>o!==t&&o.hp>0&&Math.abs(o.x-nx)<26&&Math.abs(o.x-nx)<Math.abs(o.x-x)))return '다른 전차가 막고 있습니다.';
- return '';
-}
-function doMove(idx,dir,internal){
- if(!S||S.phase!=='aim'||S.current!==idx)return '지금은 이동할 수 없습니다.';
- if(busy()&&!internal)return '잠시 기다려 주세요.';
- if(dir!==1&&dir!==-1)return '잘못된 이동 방향입니다.';
- const t=S.tanks.at(idx);if(t.fuel<1)return '이번 차례의 이동 연료를 모두 사용했습니다.';
- const dist=Math.min(SEG,t.fuel);let x=t.x,moved=0,reason='';
- for(let k=0;k<dist;k++){const nx=x+dir;reason=stepBlock(S,t,x,nx);if(reason)break;x=nx;moved++;}
- if(!moved)return reason||'이동할 수 없습니다.';
- const lo=Math.min(t.x,x)-14,hi=Math.max(t.x,x)+14;
- t.x=x;t.fuel-=moved;settle(S,false);
- S.crates=S.crates.filter(c=>{if(c.x>=lo&&c.x<=hi){collect(S,t,c);return false;}return true;});
- if(t.hp<=0){endShot();return '';}
- commit();return '';
-}
-function doFire(idx,a){
- if(!S||S.phase!=='aim'||S.current!==idx||busy())return '지금은 발사할 수 없습니다.';
- const t=S.tanks.at(idx),w=typeof a.weapon==='string'&&WKEYS.includes(a.weapon)?a.weapon:'shell';
- if(!canUse(t,w))return '선택한 포탄이 없습니다.';
- const ang=Number(a.angle),pow=Number(a.power);if(!isNum(ang)||!isNum(pow))return '각도 또는 위력 값이 올바르지 않습니다.';
- t.angle=clamp(Math.round(ang),0,180);t.power=clamp(Math.round(pow/10)*10,100,1000);
- if(w!=='shell')t.ammo[w]--;
- const mods={wind:t.buff.calm?0:S.wind,mult:t.buff.power?1.5:1},tags=[];
- if(t.buff.calm)tags.push('무풍');if(t.buff.power)tags.push('강화 x1.5');
- t.buff.calm=false;t.buff.power=false;t.buff.scope=false;t.fuel=0;S.shots++;
- addLog(S,t.name+' 발사 / '+WEAPONS[w].name+' / '+t.angle+'° / 위력 '+t.power+(tags.length?' / '+tags.join(', '):''));
- const post=clone(S);post.phase='flight';const res=simulateShot(post,idx,w,mods);S.phase='flight';
- if(net.role==='host')netSend({t:'shot',idx,angle:t.angle,power:t.power,res,post});
- startPlayback(res,post);return '';
-}
-function endShot(){
- const alive=S.tanks.filter(t=>t.hp>0);
- if(alive.length<=1||S.shots>=LIMIT){
-  S.phase='over';const w=alive.length===1?alive.at(0):null;S.winner=w?S.tanks.indexOf(w):-1;
-  if(w){w.wins++;S.matchOver=w.wins>=TARGET;}
-  addLog(S,w?(S.matchOver?w.name+' 경기 승리! ('+w.wins+'승)':w.name+' 라운드 승리 / '+w.wins+'/'+TARGET+'승'):'무승부 라운드');
- }else{
-  S.tanks.at(S.current).fuel=0;
-  do{S.current=(S.current+1)%S.tanks.length;}while(S.tanks.at(S.current).hp<=0);
-  S.wind=clamp(S.wind+Math.round(Math.random()*10-5),-25,25);S.phase='aim';giveFuel(S);
-  if(S.shots===SUDDEN)addLog(S,'서든데스: 다음 발사부터 피해 2배');
-  if(S.shots>0&&S.shots%3===0)spawnCrate(S);
- }
- commit();
-}
-function advanceRound(){if(S.matchOver)S=makeGame({mode:S.mode,count:S.tanks.length,level:S.level});else{S.round++;startRound(S);}commit();}
-function commit(){if(net.role==='host')netSend({t:'state',s:S});afterState();}
-function afterState(){syncVis();detectCrates();detectPickups();renderUI();draw();scheduleAI();kick();}
+PHOSPHOR ARTILLERY는 각도와 위력을 조절해 상대 탱크를 맞히는 아틸러리(포격) 장르 게임입니다.
+바람, 지형 파괴, 보급 헬기, 다양한 포탄을 활용해 마지막까지 살아남으면 승리합니다.
 
-/* 부드러운 이동 */
-function syncVis(){
- if(!S){vis=[];visKey='';return;}
- const key=S.gid+'/'+S.round;
- if(key!==visKey||vis.length!==S.tanks.length){visKey=key;vis=S.tanks.map(t=>({x:t.x}));return;}
- S.tanks.forEach((t,i)=>{const v=vis.at(i);if(t.hp<=0||Math.abs(v.x-t.x)>160)v.x=t.x;});
-}
-const visLag=()=>!!S&&vis.some((v,i)=>{const t=S.tanks.at(i);return !!t&&Math.abs(v.x-t.x)>.5;});
-function tankPos(i){const t=S.tanks.at(i),v=vis.at(i);if(!v||Math.abs(v.x-t.x)<=.5)return{x:t.x,y:t.y};return{x:v.x,y:groundOf(S.terrain,v.x)-6};}
-function moveVis(dt){
- let lag=false;
- S.tanks.forEach((t,i)=>{const v=vis.at(i);if(!v)return;const d=t.x-v.x;if(Math.abs(d)<=.5){v.x=t.x;return;}
-  lag=true;if(!dt)return;v.x+=Math.sign(d)*Math.min(Math.abs(d),DRIVE*dt);
-  if(fxOn()&&Math.random()<.5)addPuff(v.x-Math.sign(d)*13,groundOf(S.terrain,v.x)-2,-Math.sign(d)*18,-6,500,2.5);});
- return lag;
-}
-function updateFuel(){
- if(!S)return;const t=active(),v=vis.at(S.current);if(!t)return;
- const f=Math.round(t.fuel+(v?Math.abs(v.x-t.x):0)),max=Math.max(1,t.fuelMax||FUEL);
- setText('fuelValue',f+' / '+max);$('fuelBar').style.width=clamp(f/max*100,0,100)+'%';
-}
+- 설치나 빌드 과정이 없는 **HTML 파일 하나**로 동작합니다.
+- 게임 계산은 모두 **브라우저 안에서** 처리됩니다.
+- 이름의 *Phosphor(인광체)* 는 옛 CRT 모니터의 초록 빛을, *Artillery(포격)* 는 게임 장르를 뜻합니다.
 
-/* 포격 재생 / 효과 */
-function addPuff(x,y,vx,vy,life,size){if(particles.length>320)particles.shift();particles.push({k:'p',x,y,vx,vy,start:performance.now(),life,size,w:S?S.wind:0});}
-function headOf(p,st){const k=st>=p.end?p.pts.length-1:Math.min(p.pts.length-1,Math.floor((st-p.start)/SAMPLE));return p.pts.at(Math.max(0,k));}
-function startPlayback(res,post){
- syncVis();const now=performance.now(),t=active(),v=vis.at(S.current);if(v&&t)v.x=t.x;
- if(play)clearTimeout(play.guard);
- const p={res,post,t0:now,done:0,endAt:0,step:0,guard:0};play=p;
- p.guard=setTimeout(()=>{if(play===p){processEvents(Infinity);finishPlayback();}},res.steps/SPEED*1000+1500);
- if(fxOn()&&t){const m=muzzle(t,t.angle),r=t.angle*Math.PI/180;muzzleFx={...m,tank:S.current,angle:t.angle,start:now};
-  for(let i=0;i<5;i++)addPuff(m.x,m.y,Math.cos(r)*30+Math.random()*12-6,-Math.sin(r)*30+Math.random()*8-4,650,3);}
- fail('');renderUI();kick();
-}
-function processEvents(step){
- if(!play)return;const ev=play.res.events,now=performance.now();let changed=false;
- while(play.done<ev.length&&ev.at(play.done).step<=step){
-  const e=ev.at(play.done);play.done++;changed=true;
-  carve(S.terrain,e.x,e.y,e.r);
-  S.tanks.forEach((t,i)=>{t.hp=e.hp.at(i);t.y=e.ty.at(i);t.shield=e.sh.at(i);});
-  S.crates=S.crates.filter(c=>!e.cr.includes(c.id));for(const c of S.crates)c.y=groundOf(S.terrain,c.x);
-  blasts.push({x:e.x,y:e.y,r:e.r,start:now});
-  for(const d of e.dm){const t=S.tanks.at(d.i);if(!t)continue;const jx=Math.random()*16-8;if(d.d>0)pops.push({x:t.x+jx,y:t.y-30,text:'-'+d.d,start:now});else if(d.a>0)pops.push({x:t.x+jx,y:t.y-30,text:'SH',start:now});}
-  for(const q of e.pk){seenPick.add(q.id);pops.push({x:q.x,y:q.y,text:q.text,start:now,big:true});}
-  if(fxOn()){shake={start:now,dur:280,str:Math.min(5,1.5+e.r/25)};
-   for(let i=0;i<14;i++){const a=Math.PI+(i/13)*Math.PI,v=35+Math.random()*95;particles.push({k:'d',x:e.x,y:e.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,start:now,life:400+Math.random()*180});}
-   for(let i=0;i<6;i++)addPuff(e.x+Math.random()*e.r-e.r/2,e.y-Math.random()*10,Math.random()*20-10,-20-Math.random()*20,900,4);}
- }
- if(changed)renderUI();
-}
-function finishPlayback(){const p=play;if(!p)return;clearTimeout(p.guard);play=null;S=p.post;if(isAuthority())endShot();else drainInbox();}
-function drainInbox(){while(inbox.length&&!play)guestApply(inbox.shift());if(!play)afterState();}
-function guestApply(m){
- if(m.t==='state'){S=m.s;return;}
- if(m.t==='shot'){if(!S||S.tanks.length!==m.post.tanks.length){S=m.post;return;}
-  const t=S.tanks.at(m.idx);if(t){t.angle=clamp(Math.round(Number(m.angle))||0,0,180);t.power=clamp(Math.round(Number(m.power))||100,100,1000);}
-  S.phase='flight';startPlayback(m.res,m.post);}
-}
-function kick(){if(!raf)raf=requestAnimationFrame(loop);}
-function ambient(dt){
- if(!S||!fxOn()||!dt)return;
- if(!streaks.length)streaks=Array.from({length:16},()=>({x:Math.random()*W,y:40+Math.random()*170,f:.7+Math.random()*.6}));
- for(const k of streaks){k.x+=S.wind*14*k.f*dt;if(k.x>W+40){k.x=-40;k.y=40+Math.random()*170;}else if(k.x<-40){k.x=W+40;k.y=40+Math.random()*170;}}
- S.tanks.forEach((t,i)=>{if(t.hp>=40)return;if(Math.random()<dt*(t.hp<=0?2.5:6)){const p=tankPos(i);addPuff(p.x+Math.random()*8-4,p.y-10,0,-16,1200,3);}});
- if(play)for(const p of play.res.paths){if(play.step<p.start||play.step>p.end)continue;const h=headOf(p,play.step);if(Math.random()<.75)addPuff(h.at(0),h.at(1),0,0,650,2);}
-}
-function loop(now){
- raf=0;const dt=lastFrame&&now-lastFrame<250?(now-lastFrame)/1000:0;lastFrame=now;
- if(play){const step=Math.max(0,Math.floor((now-play.t0)*SPEED/1000));play.step=Math.min(step,play.res.steps);processEvents(step);
-  if(play&&step>=play.res.steps&&!play.endAt)play.endAt=now+(fxOn()?550:250);
-  if(play&&play.endAt&&now>=play.endAt)finishPlayback();}
- const lag=S?moveVis(dt):false;if(lag)updateFuel();
- if(lag!==lastLag){lastLag=lag;if(S)renderUI();}
- helis=helis.filter(h=>now-h.start<4300);
- const dropping=heliDropping(now);if(wasDropping&&!dropping&&S)renderUI();wasDropping=dropping;
- ambient(dt);
- blasts=blasts.filter(b=>now-b.start<650);particles=particles.filter(p=>now-p.start<p.life);pops=pops.filter(p=>now-p.start<1300);
- draw(now);
- const need=play||lag||helis.length||blasts.length||particles.length||pops.length||(muzzleFx&&now-muzzleFx.start<200)||(fxOn()&&S&&gameVisible());
- if(need){if(!raf)raf=requestAnimationFrame(loop);}else lastFrame=0;
-}
+---
 
-/* AI */
-function scheduleAI(){
- if(aiMoving)return;clearTimeout(aiTimer);
- if(!S||!isAuthority()||S.mode!=='ai')return;
- const t=active();if(S.phase!=='aim'||!t||!t.ai||play)return;
- const tok=aiToken;aiTimer=setTimeout(()=>aiRun(tok),650);
-}
-function reach(st,t,dir,maxd){const out=[];let x=t.x;for(let k=1;k<=maxd;k++){const nx=x+dir;if(stepBlock(st,t,x,nx))break;x=nx;if(k%SEG===0||k===maxd)out.push({dir,segs:Math.ceil(k/SEG),x});}return out;}
-function aiPlanMoves(st,idx){
- const t=st.tanks.at(idx),L=st.level;if(t.fuel<1)return null;
- const span=o=>({lo:Math.min(t.x,o.x)-14,hi:Math.max(t.x,o.x)+14});
- const traps=st.crates.filter(c=>c.type==='trap');
- const ok=[...reach(st,t,-1,t.fuel),...reach(st,t,1,t.fuel)].filter(o=>{if(L<5)return true;const s=span(o);return !traps.some(c=>c.x>=s.lo&&c.x<=s.hi);});
- if(!ok.length)return null;
- if(L>=3&&Math.random()<.3+L*.07){let best=null;
-  for(const o of ok){const s=span(o);for(const c of st.crates){if(c.type==='trap')continue;if(c.x>=s.lo&&c.x<=s.hi&&(!best||o.segs<best.segs))best=o;}}
-  if(best)return best;}
- if(L>=4){const foes=st.tanks.filter(o=>o!==t&&o.hp>0);
-  const near=x=>foes.reduce((m,o)=>Math.min(m,Math.abs(o.x-x)),9999);
-  const value=x=>(groundOf(st.terrain,t.x)-groundOf(st.terrain,x))*.6+Math.min(near(x),220)*.15;
-  const base=value(t.x);let best=null;
-  for(const o of ok){if(o.segs>4)continue;const v=value(o.x)-base-o.segs*1.5;if(v>6&&(!best||v>best.v))best={...o,v};}
-  if(best&&Math.random()<.4+L*.05)return best;}
- if(Math.random()<.3){const sm=ok.filter(o=>o.segs<=2);if(sm.length)return sm.at(Math.floor(Math.random()*sm.length));}
- return null;
-}
-function aiImpact(st,t,a,p,wind){
- const l=launch(t,a,p);let x=l.x,y=l.y,vx=l.vx,vy=l.vy;
- for(let k=1;k<MAXSTEP;k++){vx+=wind*DT;vy+=GRAV*DT;x+=vx*DT;y+=vy*DT;if(x<0||x>=W||y>H)return null;
-  if(k>5)for(const o of st.tanks)if(o.hp>0&&Math.hypot(x-o.x,y-(o.y-4))<12)return{x,y};
-  if(y>=groundOf(st.terrain,x))return{x,y};}
- return null;
-}
-function aiAim(st,idx){
- const t=st.tanks.at(idx),L=st.level,foes=st.tanks.map((o,i)=>({o,i})).filter(f=>f.i!==idx&&f.o.hp>0);
- if(!foes.length)return{angle:t.angle,power:t.power,weapon:'shell'};
- const pick=f=>Math.abs(f.o.x-t.x)+(L>=6?f.o.hp*2.5:0),tg=foes.reduce((a,b)=>pick(b)<pick(a)?b:a);
- if(t.lastTarget!==tg.i){t.lastTarget=tg.i;t.focus=0;}
- const wEst=t.buff.calm?0:st.wind*(L>=8?1:.35+.08*L),right=tg.o.x>t.x;
- let best={s:Infinity,a:right?45:135,p:550};
- for(let a=right?12:92;a<=(right?88:168);a+=2)for(let p=150;p<=1000;p+=20){
-  const hit=aiImpact(st,t,a,p,wEst);if(!hit)continue;
-  let s=Math.hypot(hit.x-tg.o.x,hit.y-(tg.o.y-4));if(Math.hypot(hit.x-t.x,hit.y-t.y)<50)s+=400;
-  if(s<best.s)best={s,a,p};}
- const spread=(10-L)/9,f=Math.pow(.65,t.focus)*(t.buff.scope?.5:1),angErr=spread*10*f+.4,powErr=spread*110*f+5;
- t.focus=Math.min(t.focus+1,6);
- const angle=clamp(Math.round(best.a+(Math.random()*2-1)*angErr),0,180),power=clamp(Math.round((best.p+(Math.random()*2-1)*powErr)/10)*10,100,1000);
- let weapon='shell';
- if(t.ammo.heavy>0&&best.s<70&&Math.random()<.3+L*.07)weapon='heavy';
- else if(t.ammo.quake>0&&best.s<90&&Math.random()<.2+L*.04)weapon='quake';
- else if(t.ammo.split>0&&Math.random()<.12+L*.04)weapon='split';
- return{angle,power,weapon};
-}
-function aiRun(tok){
- if(tok!==aiToken||!S||S.phase!=='aim')return;
- if(busy()){aiTimer=setTimeout(()=>aiRun(tok),200);return;}
- const idx=S.current,t0=S.tanks.at(idx);if(!t0||!t0.ai)return;
- const plan=aiPlanMoves(S,idx);aiMoving=true;renderUI();
- const abort=()=>{aiMoving=false;renderUI();scheduleAI();},bad=()=>!S||S.current!==idx||S.phase!=='aim';
- let n=0;
- const aimTurn=()=>{
-  const t=S.tanks.at(idx),aim=aiAim(S,idx),a0=t.angle,p0=t.power;let f=0;
-  const turn=()=>{if(tok!==aiToken)return;if(bad()){abort();return;}
-   f++;const tt=S.tanks.at(idx);tt.angle=Math.round(a0+(aim.angle-a0)*f/12);tt.power=Math.round((p0+(aim.power-p0)*f/12)/10)*10;
-   updateAimLabels();draw();
-   if(f<12){aiTimer=setTimeout(turn,35);return;}
-   aiMoving=false;const err=doFire(idx,aim);
-   if(err){const e2=doFire(idx,{angle:aim.angle,power:aim.power,weapon:'shell'});if(e2){fail('AI 오류: '+e2);renderUI();}}};
-  turn();
- };
- const settleWait=()=>{if(tok!==aiToken)return;if(bad()){abort();return;}if(visLag()){aiTimer=setTimeout(settleWait,60);return;}aimTurn();};
- const drive=()=>{if(tok!==aiToken)return;if(bad()){abort();return;}
-  if(plan&&n<plan.segs){n++;const err=doMove(idx,plan.dir,true);if(bad()){abort();return;}if(!err){aiTimer=setTimeout(drive,HOLD_MS);return;}}
-  settleWait();};
- drive();
-}
+## 주요 기능
 
-/* 헬기 */
-function detectCrates(){
- if(!S)return;const now=performance.now();
- for(const c of S.crates){if(seen.has(c.id))continue;seen.add(c.id);
-  if(fxOn()){const dir=S.wind>3?1:S.wind<-3?-1:(c.dir===-1?-1:1);helis.push({id:c.id,x:c.x,dir,start:now,wind:S.wind});wasDropping=true;kick();}}
-}
-function detectPickups(){if(!S||!Array.isArray(S.fxq))return;const now=performance.now();for(const q of S.fxq){if(seenPick.has(q.id))continue;seenPick.add(q.id);pops.push({x:q.x,y:q.y,text:q.text,start:now,big:true});}}
-function gustAt(e,w){const A=Math.min(Math.abs(w),25);return Math.sin(e/420)*A*.35+Math.sin(e/170)*A*.1;}
-function heliPose(h,now,gy){
- const e=now-h.start,w=h.wind,rx=clamp(h.x-clamp(w*2.2,-60,60),30,W-30),sx=h.dir>0?-90:W+90;
- const hy=64+Math.sin(e/300)*3+Math.sin(e/130)*Math.min(Math.abs(w),25)*.06;let hx,tilt;
- if(e<1100){const k=e/1100;hx=sx+(rx-sx)*(1-Math.pow(1-k,3));tilt=h.dir*.22*(1-k)-w*.008*k;}
- else if(e<1400){hx=rx+gustAt(e,w)*Math.min(1,(e-1100)/200);tilt=-w*.008+Math.sin(e/200)*.03;}
- else{const d=e-1400;hx=rx+gustAt(e,w)+h.dir*d*.45+w*d*.004;tilt=h.dir*.2-w*.004;}
- tilt=clamp(tilt,-.35,.35);
- let cx=hx,cy=null,chute=false,carried=false,sw=0;
- if(e<1300){carried=true;cy=hy+30;}
- else if(e<2100){const k=(e-1300)/800,sy=hy+30,x0=rx+gustAt(1300,w);
-  cy=sy+(gy-sy)*(k*.55+k*k*.45);cx=x0+(h.x-x0)*k+Math.sin(e/190)*Math.min(Math.abs(w),20)*.35*(1-k);
-  chute=true;sw=clamp(w*.5,-10,10)*(1-k*.5)+Math.sin(e/190)*3*(1-k);}
- return{hx,hy,tilt,cx,cy,chute,carried,sw};
-}
-function drawHeli(h,now){
- const ps=heliPose(h,now,0);if(ps.hx<-120||ps.hx>W+120)return;
- if(ps.carried){ctx.strokeStyle='#6bdc80';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ps.hx,ps.hy+10);ctx.lineTo(ps.cx,ps.cy-16);ctx.stroke();}
- ctx.save();ctx.translate(ps.hx,ps.hy);ctx.rotate(ps.tilt);ctx.scale(h.dir,1);
- ctx.strokeStyle='#b0ffb0';ctx.fillStyle='#000';ctx.lineWidth=2;
- ctx.fillRect(-16,-8,30,15);ctx.strokeRect(-16,-8,30,15);
- ctx.beginPath();ctx.moveTo(-16,-2);ctx.lineTo(-48,-5);ctx.stroke();
- const tr=4+4*Math.abs(Math.sin(now/45));ctx.beginPath();ctx.moveTo(-48,-5-tr);ctx.lineTo(-48,-5+tr);ctx.stroke();
- ctx.fillStyle='#33ff33';ctx.fillRect(4,-5,8,6);
- ctx.beginPath();ctx.moveTo(-12,11);ctx.lineTo(14,11);ctx.moveTo(-6,7);ctx.lineTo(-6,11);ctx.moveTo(8,7);ctx.lineTo(8,11);ctx.stroke();
- const len=8+28*Math.abs(Math.cos(now/70));ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(0,-13);ctx.moveTo(-len,-13);ctx.lineTo(len,-13);ctx.stroke();
- ctx.restore();
-}
-function crateDraw(x,y,mark,chute,sw){
- ctx.lineWidth=1;
- if(chute){const cx=x+(sw||0);ctx.strokeStyle='#6bdc80';ctx.beginPath();ctx.arc(cx,y-34,15,Math.PI,Math.PI*2);ctx.moveTo(cx-15,y-34);ctx.lineTo(x-7,y-16);ctx.moveTo(cx+15,y-34);ctx.lineTo(x+7,y-16);ctx.moveTo(cx,y-34);ctx.lineTo(x,y-16);ctx.stroke();}
- ctx.fillStyle='#000';ctx.fillRect(x-8,y-16,16,15);ctx.strokeStyle='#b0ffb0';ctx.strokeRect(x-8,y-16,16,15);
- ctx.fillStyle='#b0ffb0';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillText(mark,x,y-4);
-}
+| 구분 | 내용 |
+|---|---|
+| 게임 방식 | 1인 + AI 대전 / 같은 기기에서 교대(2~4대) / 온라인 1:1 |
+| AI | 난이도 1~10단계, AI도 이동·보급 획득·함정 회피 |
+| 전장 | 무작위 지형, 둥근 폭발 구덩이, 지형 붕괴와 추락 피해, 매 차례 변하는 바람 |
+| 포탄 | 기본탄, 중포탄, 분열탄, 지진탄 |
+| 보급 | 바람에 흔들리는 헬기가 낙하산 상자 투하, 아이템 10종 |
+| 규칙 | 3선승제, 30발 이후 서든데스(피해 2배), 60발 무승부 |
+| 연출 | 바퀴가 굴러가는 탱크, 화면 흔들림, 섬광, 파편, 연기, 바람 줄기 |
+| 외부 제어 | micro:bit 기울기·버튼으로 조종(Web Bluetooth) |
 
-/* 탱크 (궤도 + 바퀴 6개) */
-const WHEELS=[{x:-11,r:2.4},{x:-6.6,r:1.9},{x:-2.2,r:1.9},{x:2.2,r:1.9},{x:6.6,r:1.9},{x:11,r:2.4}];
-function drawTank(t,i,now){
- const pos=tankPos(i),on=i===S.current&&S.phase!=='over',dead=t.hp<=0;
- const col=dead?'#286b32':on?'#b0ffb0':'#33ff33',dk=dead?'#0e2b13':'#0b3d14';
- const tilt=clamp(Math.atan2(groundOf(S.terrain,pos.x+9)-groundOf(S.terrain,pos.x-9),18),-.45,.45);
- const roll=pos.x/2.4;
- let ox=0,oy=0;
- if(!dead&&fxOn()&&muzzleFx&&muzzleFx.tank===i){const age=now-muzzleFx.start;if(age<180){const r=Math.sin(Math.PI*age/180)*3,a=muzzleFx.angle*Math.PI/180;ox=-Math.cos(a)*r;oy=Math.sin(a)*r;}}
- ctx.save();ctx.translate(pos.x+ox,pos.y+oy);
- ctx.save();ctx.rotate(tilt);
- ctx.fillStyle='#000';ctx.strokeStyle=col;ctx.lineWidth=1.2;
- ctx.beginPath();ctx.moveTo(-11,0);ctx.lineTo(11,0);ctx.arc(11,3,3,-Math.PI/2,Math.PI/2);ctx.lineTo(-11,6);ctx.arc(-11,3,3,Math.PI/2,Math.PI*1.5);ctx.closePath();ctx.fill();ctx.stroke();
- ctx.lineWidth=.8;ctx.beginPath();
- const off=((roll*2.4)%3+3)%3;
- for(let k=-11+off;k<=11;k+=3){ctx.moveTo(k,5.2);ctx.lineTo(k,6.8);ctx.moveTo(k,-.8);ctx.lineTo(k,.8);}
- ctx.stroke();
- for(const wh of WHEELS){
-  const wx=wh.x,wr=wh.r;
-  ctx.fillStyle='#000';ctx.strokeStyle=col;ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(wx,3,wr,0,Math.PI*2);ctx.fill();ctx.stroke();
-  const a=dead?0:roll*(2/wr);
-  ctx.lineWidth=.7;ctx.beginPath();
-  ctx.moveTo(wx-Math.cos(a)*wr,3-Math.sin(a)*wr);ctx.lineTo(wx+Math.cos(a)*wr,3+Math.sin(a)*wr);
-  ctx.moveTo(wx+Math.sin(a)*wr,3-Math.cos(a)*wr);ctx.lineTo(wx-Math.sin(a)*wr,3+Math.cos(a)*wr);
-  ctx.stroke();
-  ctx.fillStyle=col;ctx.fillRect(wx-.6,2.4,1.2,1.2);
- }
- ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-10,-4);ctx.lineTo(11,-4);ctx.lineTo(14,0);ctx.closePath();ctx.fill();
- ctx.strokeStyle=dk;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-10,-2);ctx.lineTo(12,-2);ctx.stroke();
- ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-6,-4);ctx.lineTo(-5,-8);ctx.quadraticCurveTo(0,-11,5,-8);ctx.lineTo(6,-4);ctx.closePath();ctx.fill();
- ctx.fillStyle=dk;ctx.fillRect(-3,-8,3,1.2);
- ctx.restore();
- const ang=dead?(t.angle<90?-15:195):t.angle,a=ang*Math.PI/180;
- const ex=Math.cos(a)*18,ey=-6-Math.sin(a)*18;
- ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-6);ctx.lineTo(ex,ey);ctx.stroke();
- ctx.lineWidth=4.2;ctx.beginPath();ctx.moveTo(ex-Math.cos(a)*2.5,ey+Math.sin(a)*2.5);ctx.lineTo(ex,ey);ctx.stroke();
- ctx.lineWidth=1;
- if(!dead){
-  if(t.shield>0){ctx.strokeStyle='#6bdc80';ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(0,-4,22,Math.PI,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
-  ctx.fillStyle=col;ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.fillText(String(i+1),0,-30);if(on)ctx.fillText('v',0,-46);
-  ctx.fillStyle='#0b2810';ctx.fillRect(-12,10,24,3);ctx.fillStyle=col;ctx.fillRect(-12,10,24*clamp(t.hp,0,100)/100,3);
- }
- ctx.restore();
-}
+---
 
-/* 화면 */
-function strokePts(pts,upto){const n=upto===undefined?pts.length:Math.min(upto,pts.length);ctx.beginPath();for(let j=0;j<n;j++){const p=pts.at(j);if(j)ctx.lineTo(p.at(0),p.at(1));else ctx.moveTo(p.at(0),p.at(1));}ctx.stroke();}
-function draw(now=performance.now()){
- ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
- if(!S){ctx.fillStyle='#33ff33';ctx.font='18px monospace';ctx.textAlign='center';ctx.fillText('WAITING FOR HOST DATA...',W/2,H/2);return;}
- ctx.save();
- if(fxOn()&&shake){const age=now-shake.start;if(age<shake.dur){const k=1-age/shake.dur;ctx.translate(Math.sin(age*.09)*shake.str*k,Math.cos(age*.13)*shake.str*.65*k);}}
- ctx.strokeStyle='#092810';ctx.lineWidth=1;
- for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
- for(let y=20;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
- if(fxOn()&&S.wind!==0&&streaks.length){const len=6+Math.abs(S.wind)*1.6,sg=Math.sign(S.wind);ctx.strokeStyle='rgba(120,255,140,.22)';ctx.beginPath();for(const k of streaks){ctx.moveTo(k.x,k.y);ctx.lineTo(k.x-sg*len*k.f,k.y);}ctx.stroke();}
- const ter=S.terrain;
- ctx.fillStyle='#061b0a';ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<W;x++)ctx.lineTo(x,ter[x]);ctx.lineTo(W,H);ctx.closePath();ctx.fill();
- ctx.save();ctx.clip();ctx.strokeStyle='#10451c';for(let x=-H;x<W;x+=18){ctx.beginPath();ctx.moveTo(x,H);ctx.lineTo(x+H,0);ctx.stroke();}ctx.restore();
- ctx.strokeStyle='#33ff33';ctx.beginPath();ctx.moveTo(0,ter.at(0));for(let x=1;x<W;x++)ctx.lineTo(x,ter[x]);ctx.stroke();
- for(const c of S.crates){const h=fxOn()?helis.find(q=>q.id===c.id):null;
-  if(h){const ps=heliPose(h,now,c.y);if(ps.cy!==null){crateDraw(ps.cx,ps.cy,SUPPLY[c.type].mark,ps.chute,ps.sw);continue;}}
-  crateDraw(c.x,c.y,SUPPLY[c.type].mark,false,0);}
- S.tanks.forEach((t,i)=>{if(!t.trace.length)return;ctx.lineWidth=1;ctx.strokeStyle=i===S.current?'#4a9e51':'#173e1b';ctx.setLineDash([3,7]);strokePts(t.trace);ctx.setLineDash([]);});
- const cur=active();
- if(S.phase==='aim'&&!play&&cur&&cur.hp>0&&isMine(S.current)&&!visLag()){
-  const scope=cur.buff.scope,wind=cur.buff.calm?0:S.wind,maxk=scope?MAXSTEP:60,l=launch(cur,cur.angle,cur.power);
-  let x=l.x,y=l.y,vx=l.vx,vy=l.vy;ctx.fillStyle=scope?'#9dffa8':'#4fbf5c';
-  for(let k=1;k<=maxk;k++){vx+=wind*DT;vy+=GRAV*DT;x+=vx*DT;y+=vy*DT;if(x<0||x>=W||y>H||y>=groundOf(ter,x))break;
-   if(k>5&&S.tanks.some(o=>o.hp>0&&Math.hypot(x-o.x,y-(o.y-4))<12))break;if(k%6===0)ctx.fillRect(x-1,y-1,3,3);}
- }
- S.tanks.forEach((t,i)=>drawTank(t,i,now));
- if(play){const st=Math.max(0,play.step);
-  for(const p of play.res.paths){if(st<p.start)continue;
-   const k=st>=p.end?p.pts.length-1:Math.min(p.pts.length-1,Math.floor((st-p.start)/SAMPLE));
-   ctx.strokeStyle='#82ff82';ctx.lineWidth=1;strokePts(p.pts,k+1);
-   if(st<=p.end){const hd=p.pts.at(k);ctx.fillStyle='#dcffdc';ctx.fillRect(hd.at(0)-3,hd.at(1)-3,6,6);}}}
- for(const b of blasts){const age=now-b.start,pr=fxOn()?clamp(age/650,0,1):.6;ctx.save();
-  if(fxOn()&&age<160){ctx.fillStyle='rgba(176,255,176,'+(.35*(1-age/160)).toFixed(3)+')';ctx.beginPath();ctx.arc(b.x,b.y,b.r*.6,0,Math.PI*2);ctx.fill();}
-  ctx.globalAlpha=fxOn()?1-pr*.85:1;ctx.strokeStyle='#aaffaa';ctx.fillStyle='rgba(51,255,51,.07)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(b.x,b.y,b.r*(.2+.8*pr),0,Math.PI*2);ctx.fill();ctx.stroke();
-  ctx.beginPath();ctx.arc(b.x,b.y,b.r*(.1+.5*pr),0,Math.PI*2);ctx.stroke();ctx.restore();}
- for(const p of particles){const age=now-p.start;if(age<0||age>p.life)continue;const s=age/1000,a=1-age/p.life;
-  if(p.k==='d'){ctx.globalAlpha=a;ctx.fillStyle='#83e893';ctx.fillRect(p.x+p.vx*s,p.y+p.vy*s+100*s*s,3,3);}
-  else{ctx.globalAlpha=a*.35;ctx.fillStyle='#4fbf5c';ctx.beginPath();ctx.arc(p.x+(p.vx+p.w*1.6)*s,p.y+p.vy*s-12*s,p.size*(1+s*2.5),0,Math.PI*2);ctx.fill();}}
- ctx.globalAlpha=1;
- if(fxOn()){if(muzzleFx){const age=now-muzzleFx.start;if(age<120){ctx.strokeStyle='#b0ffb0';ctx.lineWidth=1;ctx.beginPath();ctx.arc(muzzleFx.x,muzzleFx.y,3+5*(1-age/120),0,Math.PI*2);ctx.stroke();}}
-  for(const h of helis)drawHeli(h,now);}
- ctx.textAlign='center';
- for(const p of pops){const e=now-p.start;ctx.globalAlpha=fxOn()?clamp(1-e/1300,0,1):1;ctx.font=p.big?'bold 14px monospace':'bold 16px monospace';ctx.fillStyle=p.big?'#b0ffb0':'#dcffdc';ctx.fillText(p.text,p.x,p.y-(fxOn()?e*.03:0));}
- ctx.globalAlpha=1;ctx.restore();
- ctx.font='12px monospace';ctx.textAlign='left';ctx.fillStyle='#277e36';ctx.fillText('PHOSPHOR / TERRAIN ENGINE 3.4',16,22);
- ctx.textAlign='center';ctx.fillStyle='#33ff33';ctx.fillText('WIND '+Math.abs(S.wind),W/2,20);
- const len=S.wind*4;
- if(len){const e=W/2+len/2,sg=Math.sign(len);ctx.strokeStyle='#33ff33';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-len/2,32);ctx.lineTo(e,32);ctx.lineTo(e-sg*6,27);ctx.moveTo(e,32);ctx.lineTo(e-sg*6,37);ctx.stroke();}
- if(sudden(S)){ctx.textAlign='right';ctx.fillStyle='#b0ffb0';ctx.fillText('SUDDEN DEATH x2',W-16,22);}
-}
-function updateAimLabels(){const t=active();if(!t)return;$('angle').value=t.angle;$('power').value=t.power;setText('angleValue',t.angle+'°');setText('powerValue',String(t.power));}
-function setControls(on){for(const id of['angle','power','weapon','fire'])$(id).disabled=!on;if(!on){$('moveLeft').disabled=true;$('moveRight').disabled=true;}}
-function statusText(){
- const t=active();
- if(S.phase==='over'){const w=S.winner>=0?S.tanks.at(S.winner):null,s=w?(S.matchOver?w.name+' 경기 승리!':w.name+' 라운드 승리!'):'무승부 라운드.';
-  if(S.mode==='online'&&!netOpen())return s+' 연결이 끊겼습니다.';return s+(S.matchOver?' ENTER/로고 터치: 새 경기':' ENTER/로고 터치: 다음 라운드');}
- if(play||S.phase==='flight')return t.name+' 포격 중...';
- if(heliDropping())return '보급 헬기 접근 중... 투하 후 계속합니다.';
- if(S.mode==='online'&&!netOpen())return '온라인 연결이 끊겼습니다. F2 메뉴에서 다시 연결하세요.';
- if(aiMoving)return t.name+' 기동 및 조준 중...';
- if(pendingAct)return '호스트 응답 대기 중...';
- const tail=' / 바람 '+windText(S.wind)+(sudden(S)?' / 피해 2배':'');
- if(isMine(S.current)){if(visLag())return t.name+' 이동 중...';const b=buffText(t);
-  return(S.mode==='online'?'당신 차례':t.name+' 차례')+'. 이동·조준 후 발사(SPACE / micro:bit A)'+tail+(b?' / 효과: '+b:'');}
- if(t.ai)return t.name+' (AI) 차례'+tail;
- return '상대('+t.name+') 차례 대기 중'+tail;
-}
-function renderLog(){const ol=$('log'),sig=S.log.join('|');if(ol.dataset.sig===sig)return;ol.dataset.sig=sig;ol.replaceChildren(...S.log.map(s=>{const li=document.createElement('li');li.textContent=s;return li;}));}
-function renderRoster(){
- const root=$('roster');root.replaceChildren();
- S.tanks.forEach((t,i)=>{const on=i===S.current&&S.phase!=='over',row=document.createElement('div');row.className='tank'+(on?' on':'');
-  const a=document.createElement('div');a.textContent=(on?'> ':'  ')+t.name+(t.ai?' [AI]':'')+(S.mode==='online'&&isMine(i)?' [YOU]':'')+(t.hp<=0?' / OUT':'')+' / WIN '+t.wins+'/'+TARGET;
-  const b=document.createElement('div');b.textContent='HP '+t.hp+' | SH '+t.shield+' | H'+t.ammo.heavy+' S'+t.ammo.split+' Q'+t.ammo.quake;row.append(a,b);
-  const bt=buffText(t);if(bt){const c=document.createElement('div');c.className='dim';c.textContent='효과: '+bt;row.append(c);}
-  const bar=document.createElement('div');bar.className='bar';const f=document.createElement('span');f.style.width=clamp(t.hp,0,100)+'%';bar.append(f);row.append(bar);root.append(row);});
-}
-function renderUI(){
- if(!S){setText('status',net.role==='guest'?'호스트의 전장 데이터를 기다리는 중...':'');$('roster').replaceChildren();$('log').replaceChildren();$('log').dataset.sig='';setControls(false);$('roundAction').classList.add('hidden');return;}
- const t=active(),mine=canAct(),lag=visLag(),key=S.gid+'/'+S.round+'/'+S.shots+'/'+S.current;
- if(key!==lastTurn){lastTurn=key;$('weapon').value='shell';}
- setText('roundText','ROUND '+S.round+' / '+TARGET+'선승');
- setText('modeText',S.mode==='ai'?'AI LV '+S.level+' '+RANKS.at(S.level-1):S.mode==='local'?'LOCAL':'ONLINE '+(net.role==='host'?'HOST':'GUEST')+(netOpen()?'':' / OFFLINE'));
- setText('windText','WIND '+(S.wind<0?'<< ':S.wind>0?'>> ':'')+Math.abs(S.wind));
- setText('shotText',sudden(S)?'SHOT '+S.shots+' / 피해 x2':'SHOT '+S.shots+' / x2까지 '+(SUDDEN-S.shots));
- setText('pilot',t.name+(t.ai?' / AI':S.mode==='online'?(isMine(S.current)?' / YOU':' / 상대'):' / PLAYER'));
- updateAimLabels();updateFuel();
- const o=$('weapon').options;
- o.item(0).textContent='1 기본탄 / 무제한';o.item(1).textContent='2 중포탄 / '+t.ammo.heavy+'발';o.item(2).textContent='3 분열탄 / '+t.ammo.split+'발';o.item(3).textContent='4 지진탄 / '+t.ammo.quake+'발';
- o.item(1).disabled=t.ammo.heavy<1;o.item(2).disabled=t.ammo.split<1;o.item(3).disabled=t.ammo.quake<1;
- if(!canUse(t,$('weapon').value))$('weapon').value='shell';
- setControls(mine);$('fire').disabled=!mine||lag;$('moveLeft').disabled=$('moveRight').disabled=!mine||t.fuel<1;
- const ra=$('roundAction');ra.classList.toggle('hidden',S.phase!=='over');ra.disabled=!canAdvance();ra.textContent=S.matchOver?'[ ENTER / 로고 터치 ] 새 경기':'[ ENTER / 로고 터치 ] 다음 라운드';
- setText('status',statusText());renderLog();renderRoster();
- canvas.setAttribute('aria-label','포격 전장. '+S.tanks.map(x=>x.name+' 체력 '+x.hp).join(', ')+'. 바람 '+windText(S.wind)+'. 보급 상자 '+(S.crates.map(c=>SUPPLY[c.type].name).join(', ')||'없음')+'.');
-}
+## 조작 방법
 
-/* 메뉴 */
-function setupMode(){const m=document.querySelector('input[name="mode"]:checked');return m?m.value:'ai';}
-function levelDesc(L){
- if(L<=2)return '조준 오차가 크고 바람을 거의 읽지 못합니다.';
- if(L<=4)return '바람을 일부 계산하고 보급 상자를 노려 이동합니다.';
- if(L<=5)return '고지대로 이동하고 함정 상자를 피합니다.';
- if(L<=7)return '체력이 약한 전차를 우선 노리고 영점을 빠르게 잡습니다.';
- if(L<=9)return '바람을 정확히 계산하고 특수탄을 적극 사용합니다.';
- return '거의 오차 없이 조준합니다.';
-}
-function renderSetup(){
- const m=setupMode();
- $('localOptions').classList.toggle('hidden',m==='online');$('onlineHint').classList.toggle('hidden',m!=='online');
- $('onlinePanel').classList.toggle('hidden',m!=='online');$('levelBox').classList.toggle('hidden',m!=='ai');
- const L=clamp(Math.round(Number($('level').value))||5,1,10);
- setText('levelValue',String(L));setText('levelMeter','('+'#'.repeat(L)+'.'.repeat(10-L)+') '+RANKS.at(L-1));setText('levelDesc',levelDesc(L));
-}
-function resetClient(){stopHold();mb.moveDir=0;mb.acc=0;aiToken++;clearTimeout(aiTimer);clearTimeout(pendingTimer);if(play)clearTimeout(play.guard);play=null;inbox=[];helis=[];blasts=[];particles=[];pops=[];shake=null;muzzleFx=null;aiMoving=false;pendingAct=false;wasDropping=false;lastTurn='';vis=[];visKey='';seenPick.clear();}
-function showGame(){$('setup').classList.add('hidden');$('game').classList.remove('hidden');fail('');}
-function startLocal(){
- const m=setupMode();if(m==='online'){fail('온라인은 오른쪽 패널에서 연결이 완료되면 자동으로 시작됩니다.');return;}
- closeNet();resetClient();S=makeGame({mode:m,count:$('count').value,level:$('level').value});showGame();afterState();
-}
-function showMenu(){
- if(S&&S.mode==='online'&&netOpen()&&!window.confirm('온라인 연결을 종료하고 메뉴로 돌아갈까요?'))return;
- closeNet();resetClient();S=null;$('game').classList.add('hidden');$('setup').classList.remove('hidden');renderSetup();netSay('[방 만들기] 또는 [방 참가]를 누르세요.');fail('');
-}
+### 키보드 / 마우스
 
-/* 온라인 (PeerJS 방 코드) */
-function netSay(s){setText('netStatus',s);}
-function showNetUI(){
- $('hostBox').classList.toggle('hidden',net.role!=='host');
- $('guestBox').classList.toggle('hidden',net.role!=='guest');
- $('requestBox').classList.toggle('hidden',!net.pending);
- setText('roomCode',net.code||'-----');
-}
-function makeCode(){const a=new Uint32Array(CODE_LEN);crypto.getRandomValues(a);let s='';for(const v of a)s+=CODE_ABC.charAt(v%CODE_ABC.length);return s;}
-function peerReady(){if(typeof window.Peer!=='function'){netSay('온라인 모듈(PeerJS)을 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침하세요.');return false;}return true;}
-function closeNet(){
- clearTimeout(net.aimT);const p=net.peer;
- net.role='off';net.peer=null;net.ch=null;net.pending=null;net.accepted=false;net.code='';net.chunks.clear();
- showNetUI();try{if(p)p.destroy();}catch(e){}
-}
-function peerError(peer,e){
- if(net.peer!==peer)return;
- const t=e&&e.type;
- if(t==='unavailable-id'&&net.role==='host'){hostCreate();return;}
- const msg={
-  'peer-unavailable':'해당 방 코드를 찾을 수 없습니다. 코드를 확인하거나 호스트가 방을 열었는지 확인하세요.',
-  'network':'중계 서버에 연결할 수 없습니다. 인터넷 연결을 확인하세요.',
-  'server-error':'중계 서버 오류입니다. 잠시 후 다시 시도하세요.',
-  'socket-error':'중계 서버 연결 오류입니다. 잠시 후 다시 시도하세요.',
-  'socket-closed':'중계 서버 연결이 닫혔습니다. 다시 시도하세요.',
-  'browser-incompatible':'이 브라우저는 온라인 대전을 지원하지 않습니다.',
-  'webrtc':'직접 연결에 실패했습니다. 네트워크 방화벽을 확인하세요.'
- }[t]||('오류: '+(e&&e.message?e.message:String(e)));
- netSay(msg);
-}
-function hostCreate(){
- if(!peerReady())return;
- closeNet();net.role='host';showNetUI();
- const code=makeCode();netSay('방 만드는 중...');
- const peer=new Peer(PEER_PREFIX+code,{debug:0});net.peer=peer;
- peer.on('open',()=>{if(net.peer!==peer)return;net.code=code;showNetUI();netSay('방 코드를 상대에게 알려주세요. 접속 요청이 오면 [허용]을 누르세요.');});
- peer.on('connection',conn=>{
-  if(net.peer!==peer)return;
-  conn.on('open',()=>{
-   if(net.peer!==peer)return;
-   if(net.ch||net.pending){try{conn.send(JSON.stringify({t:'reject',m:'이미 다른 플레이어가 접속 중입니다.'}));}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
-   net.pending=conn;showNetUI();netSay('접속 요청이 왔습니다. [허용] 또는 [거절]을 누르세요.');
-  });
-  conn.on('close',()=>{if(net.pending===conn){net.pending=null;showNetUI();netSay('상대가 요청을 취소했습니다. 방 코드 '+net.code+' 대기 중');}});
- });
- peer.on('disconnected',()=>{if(net.peer===peer&&!net.ch){try{peer.reconnect();}catch(e){}}});
- peer.on('error',e=>peerError(peer,e));
-}
-function acceptPeer(){
- const c=net.pending;if(!c||net.role!=='host')return;
- net.pending=null;bindChannel(c);net.accepted=true;showNetUI();onNetOpen();
-}
-function rejectPeer(){
- const c=net.pending;if(!c)return;net.pending=null;showNetUI();
- try{c.send(JSON.stringify({t:'reject',m:'호스트가 접속을 거절했습니다.'}));}catch(e){}
- setTimeout(()=>{try{c.close();}catch(e){}},300);
- netSay('거절했습니다. 방 코드 '+net.code+' 대기 중');
-}
-function guestJoin(){closeNet();net.role='guest';showNetUI();netSay('호스트에게 받은 방 코드 5자리를 입력하고 [접속]을 누르세요.');$('joinCode').focus();}
-function guestConnect(){
- if(!peerReady())return;
- const code=String($('joinCode').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
- $('joinCode').value=code;
- if(code.length!==CODE_LEN||[...code].some(ch=>!CODE_ABC.includes(ch))){netSay('방 코드는 영문·숫자 5자리입니다.');return;}
- closeNet();net.role='guest';showNetUI();netSay('접속 중... ('+code+')');
- const peer=new Peer({debug:0});net.peer=peer;
- peer.on('open',()=>{
-  if(net.peer!==peer)return;
-  const c=peer.connect(PEER_PREFIX+code,{reliable:true,serialization:'raw'});
-  bindChannel(c);
-  c.on('open',()=>{if(net.ch===c&&!net.accepted)netSay('호스트의 허용을 기다리는 중...');});
- });
- peer.on('error',e=>peerError(peer,e));
-}
-function bindChannel(c){
- net.ch=c;
- c.on('data',d=>{if(net.ch===c)recv(d);});
- c.on('close',()=>{if(net.ch===c)onDisconnect();});
- c.on('error',()=>{if(net.ch===c)netSay('데이터 연결 오류가 발생했습니다.');});
-}
-function onNetOpen(){
- netSay('연결 완료! 전투를 시작합니다.');resetClient();
- if(net.role==='host'){netSend({t:'hello',v:VER});S=makeGame({mode:'online',count:2,level:5});showGame();commit();}
- else{S=null;showGame();renderUI();draw();}
-}
-function onDisconnect(){
- if(net.role==='off')return;
- const was=net.accepted;net.ch=null;net.accepted=false;pendingAct=false;stopHold();
- netSay(was?'연결이 끊겼습니다.':'호스트와의 연결이 끊겼습니다.');
- if(was)fail('온라인 연결이 끊겼습니다. F2 메뉴에서 다시 연결하세요.');
- if(S)renderUI();
-}
-function netSend(o){
- if(!netOpen())return false;
- try{const s=JSON.stringify(o);
-  if(s.length<=CHUNK)net.ch.send(s);
-  else{const id=Math.random().toString(36).slice(2),n=Math.ceil(s.length/CHUNK);for(let i=0;i<n;i++)net.ch.send(JSON.stringify({t:'chunk',id,i,n,d:s.slice(i*CHUNK,(i+1)*CHUNK)}));}
-  return true;}catch(e){fail('전송 실패: '+e.message);return false;}
-}
-function recv(data){
- if(typeof data!=='string'||data.length>300000)return;
- let m;try{m=JSON.parse(data);}catch(e){return;}
- if(!m||typeof m!=='object')return;
- if(m.t==='chunk'){
-  if(!net.accepted)return;
-  if(typeof m.id!=='string'||!Number.isInteger(m.i)||!Number.isInteger(m.n)||m.n<1||m.n>40||m.i<0||m.i>=m.n||typeof m.d!=='string')return;
-  let c=net.chunks.get(m.id);
-  if(!c){c={n:m.n,parts:new Array(m.n),got:0};net.chunks.set(m.id,c);if(net.chunks.size>8)net.chunks.delete(net.chunks.keys().next().value);}
-  if(c.parts[m.i]===undefined){c.parts[m.i]=m.d;c.got++;}
-  if(c.got===c.n){net.chunks.delete(m.id);recv(c.parts.join(''));}
-  return;
- }
- try{handleMsg(m);}catch(e){fail('수신 데이터 처리 오류: '+e.message);}
-}
-const isPt=p=>Array.isArray(p)&&p.length===2&&isNum(p.at(0))&&isNum(p.at(1));
-const isPk=q=>q&&typeof q.id==='string'&&isNum(q.x)&&isNum(q.y)&&typeof q.text==='string'&&q.text.length<=40;
-function validState(s){
- if(!s||typeof s!=='object')return false;
- if(!Array.isArray(s.terrain)||s.terrain.length!==W||!s.terrain.every(isNum))return false;
- if(!Array.isArray(s.tanks)||s.tanks.length<2||s.tanks.length>4)return false;
- for(const t of s.tanks){
-  if(!t||typeof t.name!=='string'||t.name.length>30)return false;
-  for(const k of['x','y','hp','shield','wins','angle','power','fuel','fuelMax'])if(!isNum(t[k]))return false;
-  if(!t.ammo||!isNum(t.ammo.heavy)||!isNum(t.ammo.split)||!isNum(t.ammo.quake))return false;
-  if(!t.buff||typeof t.buff!=='object')return false;
-  if(!Array.isArray(t.trace)||t.trace.length>2000||!t.trace.every(isPt))return false;
- }
- if(!Array.isArray(s.crates)||!s.crates.every(c=>c&&isNum(c.x)&&isNum(c.y)&&typeof c.type==='string'&&has(SUPPLY,c.type)&&typeof c.id==='string'))return false;
- if(!Array.isArray(s.fxq)||s.fxq.length>8||!s.fxq.every(isPk))return false;
- if(!Array.isArray(s.log)||!s.log.every(x=>typeof x==='string'))return false;
- if(!['aim','flight','over'].includes(s.phase))return false;
- if(!Number.isInteger(s.current)||s.current<0||s.current>=s.tanks.length)return false;
- return isNum(s.wind)&&isNum(s.shots)&&isNum(s.round)&&typeof s.gid==='string';
-}
-function validRes(r,n){
- if(!r||!Array.isArray(r.paths)||!Array.isArray(r.events)||!isNum(r.steps)||r.steps<0||r.steps>MAXSTEP)return false;
- if(r.paths.length>8||r.events.length>16)return false;
- for(const p of r.paths)if(!p||!isNum(p.start)||!isNum(p.end)||!Array.isArray(p.pts)||!p.pts.length||p.pts.length>2000||!p.pts.every(isPt))return false;
- for(const e of r.events){
-  if(!e||!['step','x','y','r'].every(k=>isNum(e[k])))return false;
-  for(const k of['hp','ty','sh'])if(!Array.isArray(e[k])||e[k].length!==n||!e[k].every(isNum))return false;
-  if(!Array.isArray(e.cr)||!e.cr.every(c=>typeof c==='string'))return false;
-  if(!Array.isArray(e.dm)||!e.dm.every(d=>d&&Number.isInteger(d.i)&&d.i>=0&&d.i<n&&isNum(d.d)&&isNum(d.a)))return false;
-  if(!Array.isArray(e.pk)||!e.pk.every(isPk))return false;
- }
- return true;
-}
-function handleMsg(m){
- if(net.role==='guest'&&!net.accepted){
-  if(m.t==='reject'){const msg=String(m.m||'접속이 거절되었습니다.').slice(0,80);closeNet();net.role='guest';showNetUI();netSay(msg);return;}
-  if(m.t==='hello'){if(m.v!==VER){netSay('상대의 게임 버전이 다릅니다. 같은 v3.4 파일을 사용하세요.');closeNet();return;}net.accepted=true;onNetOpen();}
-  return;
- }
- if(net.role==='host'){
-  if(!S||S.mode!=='online')return;
-  if(m.t==='act'){const err=applyAction(1,m.a);if(err)netSend({t:'err',m:err});return;}
-  if(m.t==='aim'&&S.phase==='aim'&&S.current===1&&!play){setAim(S.tanks.at(1),m.angle,m.power);updateAimLabels();draw();}
-  return;
- }
- if(net.role!=='guest')return;
- if(m.t==='state'){if(!validState(m.s))throw new Error('상태 데이터 형식 오류');pendingAct=false;if(play){inbox.push(m);return;}guestApply(m);if(!play)afterState();return;}
- if(m.t==='shot'){if(!validState(m.post)||!validRes(m.res,m.post.tanks.length)||!Number.isInteger(m.idx))throw new Error('포격 데이터 형식 오류');
-  pendingAct=false;if(play){inbox.push(m);return;}guestApply(m);if(!play)afterState();return;}
- if(m.t==='aim'){if(S&&S.phase==='aim'&&S.current===0&&!play){setAim(S.tanks.at(0),m.angle,m.power);updateAimLabels();draw();}return;}
- if(m.t==='err'){pendingAct=false;stopHold();fail(String(m.m).slice(0,160));renderUI();}
-}
-async function copyCode(){
- if(!net.code){netSay('아직 방 코드가 없습니다.');return;}
- try{await navigator.clipboard.writeText(net.code);netSay('방 코드 '+net.code+' 를 복사했습니다. 상대에게 알려주세요.');}
- catch(e){netSay('자동 복사가 차단되었습니다. 화면의 코드 '+net.code+' 를 직접 알려주세요.');}
-}
+| 키 | 동작 |
+|---|---|
+| `A` / `D` | 누르는 동안 왼쪽 / 오른쪽 이동 (연료 소모) |
+| `←` / `→` | 각도 ±1° (SHIFT: ±5°) |
+| `↑` / `↓` | 위력 ±10 (SHIFT: ±50) |
+| `1` ~ `4` | 포탄 선택 |
+| `SPACE` | 발사 |
+| `ENTER` | 전투 시작 / 다음 라운드 |
+| `F1` / `F2` | 도움말 / 메뉴 |
 
-/* 입력 */
-function setAim(t,a,p){if(!t)return;const na=Number(a),np=Number(p);if(isNum(na))t.angle=clamp(Math.round(na),0,180);if(isNum(np))t.power=clamp(Math.round(np/10)*10,100,1000);}
-function sendAim(){if(!S||S.mode!=='online'||!netOpen())return;clearTimeout(net.aimT);net.aimT=setTimeout(()=>{const t=active();if(t)netSend({t:'aim',angle:t.angle,power:t.power});},50);}
-function flushAim(){clearTimeout(net.aimT);const t=active();if(t&&S.mode==='online')netSend({t:'aim',angle:t.angle,power:t.power});}
-function request(a){
- if(a.type==='next'){if(!canAdvance())return 'skip';}else if(!canAct())return 'skip';
- if(net.role==='guest'){
-  if(a.type==='fire')flushAim();
-  if(netSend({t:'act',a})){pendingAct=true;clearTimeout(pendingTimer);pendingTimer=setTimeout(()=>{if(pendingAct){pendingAct=false;renderUI();}},4000);renderUI();}
-  return '';
- }
- const err=applyAction(S.current,a);if(err)fail(err);else if(a.type!=='next')fail('');return err;
-}
-function stopHold(){hold.dir=0;clearTimeout(hold.timer);hold.timer=0;}
-function startHold(dir){
- if(hold.dir===dir)return;stopHold();hold.dir=dir;
- const tick=()=>{
-  if(hold.dir!==dir)return;
-  if(!S||S.phase!=='aim'){stopHold();return;}
-  const t=active();if(!t||!isMine(S.current)||t.fuel<1){stopHold();if(S)renderUI();return;}
-  if(!pendingAct){const r=request({type:'move',dir});if(r&&r!=='skip'){stopHold();return;}}
-  hold.timer=setTimeout(tick,HOLD_MS);
- };
- tick();
-}
-function fireNow(){const t=active();if(!t||visLag())return;stopHold();request({type:'fire',angle:t.angle,power:t.power,weapon:$('weapon').value});}
-function cycleWeapon(){
- const t=active();if(!t)return;
- const cur=Math.max(0,WKEYS.indexOf($('weapon').value));
- for(let k=1;k<=WKEYS.length;k++){const w=WKEYS.at((cur+k)%WKEYS.length);if(canUse(t,w)){$('weapon').value=w;fail('');setText('status',WEAPONS[w].name+' 선택');return;}}
-}
-function toggleHelp(){const h=$('help');h.open=!h.open;if(h.open)h.scrollIntoView({block:'nearest'});}
-function clearFx(){shake=null;particles=[];muzzleFx=null;helis=[];streaks=[];wasDropping=false;}
+터치 화면에서는 이동 버튼을 길게 누르면 계속 이동합니다.
 
-/* micro:bit (Web Bluetooth UART) */
-const MB_UART='6e400001-b5a3-f393-e0a9-e50e24dcca9e',MB_TX='6e400002-b5a3-f393-e0a9-e50e24dcca9e',MB_DEAD_PITCH=12,MB_DEAD_ROLL=20;
-const mbDecoder=new TextDecoder();
-function mbSay(s){setText('mbStatus',s);}
-function mbConnected(){return !!(mb.dev&&mb.dev.gatt&&mb.dev.gatt.connected);}
-function mbUI(){const on=mbConnected();$('mbButton').textContent=on?'[ micro:bit 해제 ]':'[ micro:bit 연결 ]';$('mbButton').setAttribute('aria-pressed',String(on));}
-function mbStopMove(){if(mb.moveDir&&hold.dir===mb.moveDir)stopHold();mb.moveDir=0;mb.acc=0;}
-function mbDisconnect(quiet){
- const d=mb.dev,ch=mb.ch;mb.dev=null;mb.ch=null;mb.buf='';mbStopMove();clearInterval(mb.timer);mb.timer=0;
- if(ch){try{ch.removeEventListener('characteristicvaluechanged',mbData);}catch(e){}}
- if(d){d.removeEventListener('gattserverdisconnected',mbLost);try{if(d.gatt.connected)d.gatt.disconnect();}catch(e){}}
- if(!quiet)mbSay('micro:bit 연결 해제됨');
- setText('mbTilt','PITCH -- / ROLL --');mbUI();
-}
-function mbLost(){mbDisconnect(true);mbSay('micro:bit 연결이 끊겼습니다. 다시 연결하세요.');}
-async function mbConnect(){
- if(mbConnected()){mbDisconnect(false);return;}
- if(!navigator.bluetooth){mbSay('이 브라우저는 Web Bluetooth를 지원하지 않습니다. PC나 안드로이드의 Chrome 또는 Edge를 사용하세요.');return;}
- if(!window.isSecureContext){mbSay('https 주소(GitHub Pages)에서 열어야 블루투스를 사용할 수 있습니다.');return;}
- try{
-  mbSay('micro:bit 검색 중... 목록에서 BBC micro:bit를 선택하세요.');
-  const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'BBC micro:bit'}],optionalServices:[MB_UART]});
-  mb.dev=dev;dev.addEventListener('gattserverdisconnected',mbLost);
-  mbSay('연결 중...');
-  const server=await dev.gatt.connect();
-  const service=await server.getPrimaryService(MB_UART);
-  const ch=await service.getCharacteristic(MB_TX);
-  mb.ch=ch;ch.addEventListener('characteristicvaluechanged',mbData);
-  await ch.startNotifications();
-  mb.buf='';mb.last=0;mbStart();
-  mbSay('연결됨: '+(dev.name||'micro:bit'));mbUI();
- }catch(e){
-  const msg=e&&e.name==='NotFoundError'?'장치 선택을 취소했습니다.':'연결 실패: '+(e&&e.message?e.message:String(e))+' / MakeCode의 bluetooth 확장, UART 서비스, No Pairing Required 설정을 확인하세요.';
-  mbDisconnect(true);mbSay(msg);
- }
-}
-function mbData(e){
- const v=e.target&&e.target.value;if(!v)return;
- mb.buf+=mbDecoder.decode(v,{stream:true});
- if(mb.buf.length>400)mb.buf=mb.buf.slice(-80);
- const lines=mb.buf.split(/\r?\n/);mb.buf=lines.pop()||'';
- for(const raw of lines){const s=raw.trim();if(s)mbCmd(s);}
-}
-function mbCmd(s){
- if(s.startsWith('T,')){
-  const p=s.split(','),pi=Number(p.at(1)),ro=Number(p.at(2));
-  if(isNum(pi)&&isNum(ro)){mb.pitch=clamp(pi,-180,180);mb.roll=clamp(ro,-180,180);mb.last=performance.now();setText('mbTilt','PITCH '+Math.round(mb.pitch)+'° / ROLL '+Math.round(mb.roll)+'°');}
-  return;
- }
- const inGame=gameVisible()&&!!S;
- if(s==='A'){setText('mbKey','입력: A 발사');if(inGame&&canAct())fireNow();return;}
- if(s==='B'){setText('mbKey','입력: B 포탄 변경');if(inGame&&canAct())cycleWeapon();return;}
- if(s==='AB'){setText('mbKey','입력: A+B 시작');
-  if(!$('setup').classList.contains('hidden')){if(setupMode()==='online')mbSay('온라인은 연결 패널에서 연결이 끝나면 자동으로 시작됩니다.');else startLocal();}
-  return;}
- if(s==='L'){setText('mbKey','입력: 로고 터치');if(inGame&&S.phase==='over')request({type:'next'});return;}
-}
-function mbStart(){
- clearInterval(mb.timer);let prev=performance.now();
- mb.timer=setInterval(()=>{const now=performance.now(),dt=Math.min(.2,(now-prev)/1000);prev=now;mbTick(dt,now);},50);
-}
-function mbTick(dt,now){
- const fresh=mb.last>0&&now-mb.last<600;
- const ok=fresh&&gameVisible()&&canAct();
- let dir=0;
- if(ok){const r=mb.roll*($('mbRollInv').checked?-1:1);if(r>MB_DEAD_ROLL)dir=1;else if(r<-MB_DEAD_ROLL)dir=-1;}
- if(dir!==mb.moveDir){if(mb.moveDir!==0&&hold.dir===mb.moveDir)stopHold();mb.moveDir=dir;if(dir)startHold(dir);}
- if(!ok){mb.acc=0;return;}
- const p=mb.pitch*($('mbPitchInv').checked?-1:1),ap=Math.abs(p);
- if(ap<=MB_DEAD_PITCH){mb.acc=0;return;}
- const rate=Math.min(70,(ap-MB_DEAD_PITCH)*2.5);
- mb.acc+=Math.sign(p)*rate*dt;
- const step=Math.trunc(mb.acc);
- if(step){mb.acc-=step;const t=active();if(!t)return;setAim(t,t.angle+step,t.power);updateAimLabels();draw();sendAim();}
-}
+### micro:bit
 
-/* 이벤트 */
-for(const [id,dir] of [['moveLeft',-1],['moveRight',1]]){
- const b=$(id);
- b.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(x){}startHold(dir);});
- for(const ev of['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,stopHold);
- b.addEventListener('click',e=>{if(e.detail===0)request({type:'move',dir});});
- b.addEventListener('contextmenu',e=>e.preventDefault());
-}
-$('startButton').addEventListener('click',startLocal);
-$('hostButton').addEventListener('click',hostCreate);
-$('joinButton').addEventListener('click',guestJoin);
-$('connectButton').addEventListener('click',guestConnect);
-$('joinCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();guestConnect();}});
-$('joinCode').addEventListener('input',()=>{const el=$('joinCode'),v=el.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,CODE_LEN);if(el.value!==v)el.value=v;});
-$('acceptButton').addEventListener('click',acceptPeer);
-$('rejectButton').addEventListener('click',rejectPeer);
-$('copyButton').addEventListener('click',copyCode);
-$('helpButton').addEventListener('click',toggleHelp);$('menuButton').addEventListener('click',showMenu);
-$('mbButton').addEventListener('click',mbConnect);
-motion.addEventListener('change',()=>{if(!fxOn())clearFx();if(S){renderUI();draw();kick();}});
-document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change',renderSetup));
-$('level').addEventListener('input',renderSetup);
-$('fire').addEventListener('click',fireNow);
-$('roundAction').addEventListener('click',()=>request({type:'next'}));
-$('weapon').addEventListener('change',()=>{const t=active();if(!t)return;if(!canUse(t,$('weapon').value)){$('weapon').value='shell';fail('해당 포탄이 없습니다.');}else fail('');});
-for(const id of['angle','power'])$(id).addEventListener('input',()=>{
- if(!canAct())return;const t=active();
- if(id==='angle')setAim(t,$('angle').value,t.power);else setAim(t,t.angle,$('power').value);
- updateAimLabels();draw();sendAim();
-});
-document.addEventListener('keydown',e=>{
- if(e.key==='F1'){e.preventDefault();toggleHelp();return;}
- if(e.key==='F2'){e.preventDefault();showMenu();return;}
- const el=document.activeElement,tag=el?el.tagName:'';
- if(tag==='TEXTAREA'||tag==='SELECT')return;
- if(tag==='INPUT'&&el.type!=='range'&&!(el.type==='radio'&&e.key==='Enter'))return;
- if(tag==='INPUT'&&e.key.startsWith('Arrow'))return;
- if((tag==='BUTTON'||tag==='SUMMARY')&&(e.code==='Space'||e.key==='Enter'))return;
- if(!$('setup').classList.contains('hidden')){if(e.key==='Enter'&&setupMode()!=='online'){e.preventDefault();startLocal();}return;}
- if(!S)return;
- if(e.key==='Enter'){if(S.phase==='over'){e.preventDefault();request({type:'next'});}return;}
- if(e.code==='KeyA'||e.code==='KeyD'){e.preventDefault();if(!e.repeat)startHold(e.code==='KeyA'?-1:1);return;}
- if(!canAct())return;const t=active();
- if(e.code==='Space'){e.preventDefault();fireNow();return;}
- const wk={Digit1:'shell',Digit2:'heavy',Digit3:'split',Digit4:'quake',Numpad1:'shell',Numpad2:'heavy',Numpad3:'split',Numpad4:'quake'}[e.code];
- if(wk){if(canUse(t,wk)){$('weapon').value=wk;fail('');}else fail(WEAPONS[wk].name+'이 없습니다.');return;}
- const ch={ArrowLeft:['angle',1],ArrowRight:['angle',-1],ArrowUp:['power',10],ArrowDown:['power',-10]}[e.key];
- if(ch){e.preventDefault();const k=ch.at(0),d=ch.at(1)*(e.shiftKey?5:1);
-  if(k==='angle')setAim(t,t.angle+d,t.power);else setAim(t,t.angle,t.power+d);updateAimLabels();draw();sendAim();}
-});
-document.addEventListener('keyup',e=>{if((e.code==='KeyA'&&hold.dir===-1)||(e.code==='KeyD'&&hold.dir===1))stopHold();});
-window.addEventListener('blur',()=>{if(hold.dir!==mb.moveDir||!mb.moveDir)stopHold();});
-window.addEventListener('pagehide',()=>{closeNet();mbDisconnect(true);});
-showNetUI();renderSetup();mbUI();draw();
-})();
-</script>
-</body></html>
+| micro:bit 동작 | 게임 동작 |
+|---|---|
+| 위/아래로 기울이기 | 각도 조절 (많이 기울일수록 빠름) |
+| 좌/우로 기울이기 | 탱크 이동 |
+| A 버튼 | 발사 |
+| B 버튼 | 포탄 변경 |
+| A+B 버튼 | 전투 시작 |
+| 로고 터치 | 다음 라운드 / 새 경기 |
+
+---
+
+## 게임 규칙
+
+### 한 차례의 흐름
+
+1. **이동** - 연료(매 차례 48)를 써서 위치 조정
+2. **조준** - 각도와 위력 조절
+3. **포탄 선택**
+4. **발사** - 발사하면 차례 종료
+
+### 포탄
+
+| 포탄 | 특징 | 지급 |
+|---|---|---|
+| 기본탄 | 반경 26 / 피해 55 | 무제한 |
+| 중포탄 | 반경 45 / 피해 80 | 라운드마다 1발 (최대 4) |
+| 분열탄 | 최고점에서 3갈래 / 각 피해 36 | 라운드마다 1발 (최대 4) |
+| 지진탄 | 반경 67 큰 구덩이 / 피해 24 / 추락 유도 | 보급으로만 획득 (최대 3) |
+
+### 보급 상자 10종
+
+라운드 시작과 3발마다 헬기가 상자를 투하합니다(최대 2개). 전차로 지나가거나 포탄으로 맞히면 획득합니다.
+
+| 표시 | 아이템 | 효과 | 확률 |
+|---|---|---|---|
+| H | 중포탄 | 중포탄 +1 | 12% |
+| S | 분열탄 | 분열탄 +1 | 11% |
+| Q | 지진탄 | 지진탄 +1 | 8% |
+| + | 수리 | 체력 +25 | 12% |
+| O | 방어막 | 방어막 +35 | 10% |
+| F | 연료 2배 | 다음 차례 연료 96 | 11% |
+| C | 무풍탄 | 다음 1발 바람 무시 | 9% |
+| L | 정밀 조준경 | 다음 발사까지 탄도 전체 표시 | 10% |
+| P | 강화탄 | 다음 1발 피해 1.5배 | 8% |
+| ! | 함정 상자 | 밟으면 피해 15 / 포탄으로 맞히면 폭발 | 9% |
+
+### AI 난이도
+
+| 단계 | 특징 |
+|---|---|
+| 1~2 | 조준 오차가 크고 바람을 거의 무시 |
+| 3~4 | 바람 일부 계산, 보급 상자를 노려 이동 |
+| 5~7 | 고지대 이동, 함정 회피, 약한 전차 우선 공격 |
+| 8~10 | 정확한 바람 계산, 특수탄 적극 사용 |
+
+---
+
+## 온라인 1:1 대전
+
+방 코드 5자리로 연결합니다.
+
+1. 두 사람 모두 메뉴에서 **온라인 1:1** 선택
+2. **호스트:** `[방 만들기]` → 화면의 5자리 코드를 상대에게 알려주기
+3. **게스트:** `[방 참가]` → 코드 입력 → `[접속]`
+4. **호스트:** 접속 요청이 오면 `[허용]` → 자동으로 전투 시작
+
+- 연결을 시작할 때 무료 공개 중계 서버 [PeerJS](https://peerjs.com/)를 사용합니다.
+- 게임 계산은 호스트 브라우저에서 처리하고, 결과를 게스트 화면에 똑같이 보여줍니다.
+- 두 사람 모두 **같은 버전(v3.4)** 을 사용해야 합니다.
+
+---
+
+## micro:bit 연결
+
+### 1. MakeCode 프로그램 만들기
+
+1. [MakeCode for micro:bit](https://makecode.microbit.org/)에서 새 프로젝트를 만듭니다.
+2. **확장**에서 `bluetooth`를 추가합니다. radio 확장이 제거된다는 안내가 나오면 확인을 누릅니다.
+3. **톱니바퀴 → 프로젝트 설정**에서 `No Pairing Required`를 켭니다.
+4. **JavaScript** 탭에 아래 코드를 붙여넣고 micro:bit에 다운로드합니다.
+
+```typescript
+let connected = false
+bluetooth.startUartService()
+basic.showIcon(IconNames.Diamond)
+
+bluetooth.onBluetoothConnected(function () {
+    connected = true
+    basic.showIcon(IconNames.Yes)
+})
+bluetooth.onBluetoothDisconnected(function () {
+    connected = false
+    basic.showIcon(IconNames.No)
+})
+input.onButtonPressed(Button.A, function () {
+    if (connected) bluetooth.uartWriteLine("A")
+})
+input.onButtonPressed(Button.B, function () {
+    if (connected) bluetooth.uartWriteLine("B")
+})
+input.onButtonPressed(Button.AB, function () {
+    if (connected) bluetooth.uartWriteLine("AB")
+})
+input.onLogoEvent(TouchButtonEvent.Pressed, function () {
+    if (connected) bluetooth.uartWriteLine("L")
+})
+basic.forever(function () {
+    if (connected) {
+        bluetooth.uartWriteLine("T," + input.rotation(Rotation.Pitch) + "," + input.rotation(Rotation.Roll))
+    }
+    basic.pause(100)
+})
+```
+
+> **micro:bit V1 사용 시:** 로고 터치가 없으므로 `input.onLogoEvent(...)` 부분을 아래 코드로 바꾸세요. GND를 잡은 채 P0 핀을 만지면 다음 라운드로 넘어갑니다.
+>
+> ```typescript
+> input.onPinPressed(TouchPin.P0, function () {
+>     if (connected) bluetooth.uartWriteLine("L")
+> })
+> ```
+
+### 2. 게임과 연결하기
+
+1. micro:bit 화면에 ◇ 모양이 뜨면 연결 대기 상태입니다.
+2. **https 주소(GitHub Pages)** 로 게임을 엽니다.
+3. `[ micro:bit 연결 ]` 버튼 → 목록에서 `BBC micro:bit [...]` 선택
+4. micro:bit에 ✓ 표시가 뜨고, 화면 위쪽 PITCH / ROLL 값이 움직이면 연결 완료입니다.
+5. 기울인 방향과 반대로 움직이면 `위/아래 반전`, `좌/우 반전`을 켜세요.
+
+### micro:bit가 보내는 신호
+
+| 신호 | 의미 |
+|---|---|
+| `T,피치,롤` | 기울기 (0.1초마다) |
+| `A` / `B` / `AB` | 버튼 입력 |
+| `L` | 로고 터치 |
+
+---
+
+## 설치 및 배포
+
+### 로컬에서 실행
+
+`index.html`을 브라우저로 열면 바로 실행됩니다.
+단, micro:bit 연결은 https 환경에서만 동작하므로 GitHub Pages로 배포해 사용하세요.
+
+### GitHub Pages 배포
+
+1. 이 저장소 최상위에 `index.html`, `README.md`를 올립니다.
+2. **Settings → Pages** 에서 **Deploy from a branch** 선택
+3. 브랜치 `main`, 폴더 `/(root)` 선택 후 저장
+4. 잠시 뒤 표시되는 주소로 접속합니다.
+
+### 파일 구조
+
+```
+/
+├── index.html   # 게임 전체 (HTML + CSS + JavaScript)
+└── README.md    # 이 문서
+```
+
+---
+
+## 지원 환경
+
+| 기능 | Chrome / Edge (PC, 안드로이드) | Safari (iPhone, iPad) |
+|---|---|---|
+| AI / 로컬 대전 | 지원 | 지원 |
+| 온라인 1:1 | 지원 | 지원 |
+| micro:bit 연결 | 지원 | 미지원 (Web Bluetooth 없음) |
+
+---
+
+## 개인정보 및 네트워크
+
+- 쿠키, 분석 도구, 로컬 저장소를 사용하지 않습니다. 새로고침하면 진행 기록이 사라집니다.
+- AI·로컬 대전은 외부로 데이터를 보내지 않습니다.
+- **온라인 대전 시**에만 PeerJS 라이브러리와 중계 서버를 사용하며, 연결 과정에서 IP 주소가 중계 서버에 전달됩니다. 게임 데이터는 보통 두 브라우저 사이에서 직접 오가지만, 직접 연결이 막힌 네트워크에서는 중계 서버를 거칠 수 있습니다.
+- micro:bit는 브라우저와 블루투스로 직접 연결됩니다.
+
+---
+
+## 알려진 제한사항
+
+- 온라인 대전은 무료 공개 서버를 사용하므로 서버 상태나 학교·회사 방화벽에 따라 연결되지 않을 수 있습니다.
+- 온라인 연결이 끊기면 이어서 할 수 없으며 다시 연결해야 합니다.
+- 저장/불러오기, 사운드 기능은 없습니다.
+- 전장은 Canvas로 그려지므로 스크린리더만으로 조준하기에는 한계가 있습니다.
+- 운영체제의 '동작 줄이기' 설정을 켜면 흔들림·파편 등 연출이 자동으로 줄어듭니다.
+
+---
+
+## 고지
+
+이 게임은 고전 아틸러리 게임 *Scorched Earth*(1991)에서 영감을 받은 **독립 구현작**입니다.
+원작의 코드, 그래픽, 음원을 사용하지 않았으며 원작자와 관련이 없습니다.
