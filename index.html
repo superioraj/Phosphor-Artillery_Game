@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PHOSPHOR ARTILLERY 3.2</title>
+<title>PHOSPHOR ARTILLERY 3.3</title>
 <style>
 :root{color-scheme:dark;--fg:#33ff33;--dim:#1eaa38;--br:#b0ffb0;--ln:#238a35;--bad:#ff8a8a}
 *{box-sizing:border-box}body{margin:0;background:#000;color:var(--fg);font:15px/1.55 Consolas,'Courier New',monospace;text-shadow:0 0 3px rgba(51,255,51,.35)}
@@ -11,6 +11,8 @@ header{border-bottom:3px double var(--fg);padding-bottom:10px;display:flex;justi
 h1{font-size:clamp(20px,3vw,30px);margin:4px 0;letter-spacing:2px}h2{font-size:14px;margin:0 0 8px;letter-spacing:1px}p{margin:6px 0}
 .dim{color:var(--dim)}.small{font-size:12px}
 .cursor{display:inline-block;width:.6em;height:1em;background:var(--fg);vertical-align:text-bottom;animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+.mbbar{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;border-bottom:1px dashed var(--ln);padding:6px 0;font-size:13px}
+.mbbar .radio{margin:0}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px}.setup{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
 .panel{border:3px double var(--ln);padding:12px;min-width:0}
 .hud{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;padding-bottom:8px;font-size:13px}
@@ -52,11 +54,18 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <body><main>
 <header>
 <div><div class="dim">C:\GAMES&gt; PHOSPHOR.EXE<span class="cursor" aria-hidden="true"></span></div>
-<h1>PHOSPHOR ARTILLERY</h1><span class="dim">v3.2 / 3선승 포격전 / AI LV 1-10 / ONLINE 1:1</span></div>
-<div class="row" style="flex:0 1 460px">
-<button id="helpButton" type="button">[ F1 ] 도움말</button><button id="menuButton" type="button">[ F2 ] 메뉴</button><button id="fxButton" type="button" aria-pressed="true">[ FX : ON ]</button>
+<h1>PHOSPHOR ARTILLERY</h1><span class="dim">v3.3 / 3선승 포격전 / AI LV 1-10 / ONLINE 1:1 / micro:bit</span></div>
+<div class="row" style="flex:0 1 640px">
+<button id="helpButton" type="button">[ F1 ] 도움말</button><button id="menuButton" type="button">[ F2 ] 메뉴</button><button id="fxButton" type="button" aria-pressed="true">[ FX : ON ]</button><button id="mbButton" type="button" aria-pressed="false">[ micro:bit 연결 ]</button>
 </div>
 </header>
+<div class="mbbar" aria-label="micro:bit 상태">
+<span id="mbStatus" role="status" aria-live="polite">micro:bit 미연결</span>
+<span id="mbTilt" class="dim">PITCH -- / ROLL --</span>
+<span id="mbKey" class="dim"></span>
+<label class="radio"><input type="checkbox" id="mbPitchInv"> 위/아래 반전</label>
+<label class="radio"><input type="checkbox" id="mbRollInv"> 좌/우 반전</label>
+</div>
 <noscript>이 게임은 JavaScript를 활성화해야 실행됩니다.</noscript>
 <div id="error" class="error" role="alert"></div>
 
@@ -76,7 +85,7 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <input id="level" type="range" min="1" max="10" step="1" value="5">
 <p id="levelMeter" class="meter" aria-hidden="true"></p><p id="levelDesc" class="dim small"></p>
 </div>
-<button id="startButton" type="button" class="full fire">[ ENTER ] 전투 시작</button>
+<button id="startButton" type="button" class="full fire">[ ENTER / A+B ] 전투 시작</button>
 </div>
 <p id="onlineHint" class="dim small hidden">온라인은 오른쪽 패널에서 연결이 완료되면 자동으로 시작됩니다.</p>
 </div>
@@ -101,7 +110,7 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <div class="hud"><span id="roundText"></span><span id="modeText"></span><span id="windText"></span><span id="shotText"></span></div>
 <div class="field"><canvas id="battle" width="1000" height="520" role="img" aria-label="포격 전장">Canvas를 지원하는 브라우저가 필요합니다.</canvas></div>
 <div id="status" class="status" role="status" aria-live="polite"></div>
-<button id="roundAction" type="button" class="full fire hidden">[ ENTER ] 다음 라운드</button>
+<button id="roundAction" type="button" class="full fire hidden">[ ENTER / 로고 터치 ] 다음 라운드</button>
 <h2 style="margin-top:12px">[ COMBAT LOG ]</h2><ol id="log" class="log" aria-label="최근 전투 기록"></ol>
 </section>
 <aside class="panel">
@@ -109,7 +118,7 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <div id="pilot" class="badge"></div>
 <label for="angle">각도 <output id="angleValue"></output></label><input id="angle" type="range" min="0" max="180" step="1" value="45">
 <label for="power">위력 <output id="powerValue"></output></label><input id="power" type="range" min="100" max="1000" step="10" value="550">
-<label for="weapon">포탄 (1-4)</label>
+<label for="weapon">포탄 (1-4 / micro:bit B)</label>
 <select id="weapon"><option value="shell">1 기본탄</option><option value="heavy">2 중포탄</option><option value="split">3 분열탄</option><option value="quake">4 지진탄</option></select>
 <p class="label">이동 연료 <output id="fuelValue"></output></p>
 <div class="bar" aria-hidden="true"><span id="fuelBar" style="width:100%"></span></div>
@@ -151,9 +160,20 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <p class="dim small">폭발은 둥근 구덩이를 만들고, 위쪽 흙은 아래로 내려앉습니다.</p>
 <h3>05. 전장 규칙</h3>
 <ul><li>이동 연료: 매 차례 48 (연료 2배 시 96)</li><li>바람은 매 차례 조금씩 변함</li><li>발밑 지형이 파이면 추락 피해</li><li>30발 이후 모든 피해 2배 (서든데스)</li><li>60발 도달 시 무승부</li><li>포구 앞 점선 = 초반 탄도 가이드</li></ul>
+<h3>06. micro:bit 제어</h3>
+<div class="tw"><table class="t">
+<tr><th>micro:bit</th><th>동작</th></tr>
+<tr><td>위/아래 기울기</td><td>각도 조절 (많이 기울일수록 빠름)</td></tr>
+<tr><td>좌/우 기울기</td><td>탱크 이동 (연료 소모)</td></tr>
+<tr><td>A 버튼</td><td>발사</td></tr>
+<tr><td>B 버튼</td><td>포탄 변경</td></tr>
+<tr><td>A+B 버튼</td><td>전투 시작 (설정 화면)</td></tr>
+<tr><td>로고 터치</td><td>다음 라운드 / 새 경기</td></tr>
+</table></div>
+<p class="dim small">위력은 키보드나 슬라이더로 조절합니다. 기울이는 방향이 반대로 움직이면 상단의 반전 옵션을 켜세요.</p>
 </section>
 <section>
-<h3>06. 보급 헬기 / 상자 10종</h3>
+<h3>07. 보급 헬기 / 상자 10종</h3>
 <p>라운드 시작과 3발마다 헬기가 투하 (최대 2개). 헬기와 낙하산은 <b>바람에 밀립니다</b>. 투하 중에는 행동할 수 없습니다.<br>획득: 전차로 지나가기 / 포탄·폭발로 맞히기</p>
 <div class="tw"><table class="t">
 <tr><th>표시</th><th>이름</th><th>효과</th><th>확률</th></tr>
@@ -168,24 +188,24 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <tr><td><span class="mk">P</span></td><td>강화탄</td><td>다음 1발 피해 1.5배</td><td>8%</td></tr>
 <tr><td><span class="mk">!</span></td><td>함정 상자</td><td>밟으면 피해 15 / 맞히면 폭발</td><td>9%</td></tr>
 </table></div>
-<h3>07. AI 난이도 1~10</h3>
+<h3>08. AI 난이도 1~10</h3>
 <ul><li><b>1~2</b> 조준 오차 큼, 바람 거의 무시</li><li><b>3~4</b> 바람 일부 계산, 보급 상자를 노려 이동</li><li><b>5~7</b> 고지대 이동, 함정 회피, 약한 전차 우선</li><li><b>8~10</b> 정확한 바람 계산, 특수탄 적극 사용</li></ul>
-<h3>08. 온라인 1:1</h3>
+<h3>09. 온라인 1:1</h3>
 <ol><li>두 사람 모두 <b>온라인 1:1</b> 선택</li><li>HOST: [방 만들기] &rarr; 내 코드 전달</li><li>GUEST: [방 참가] &rarr; 받은 코드 붙여넣기 &rarr; [코드 적용]</li><li>GUEST: 응답 코드를 HOST에게 전달</li><li>HOST: 응답 코드 붙여넣기 &rarr; [코드 적용] &rarr; 자동 시작</li></ol>
-<p class="dim small">두 사람 모두 같은 v3.2 파일을 사용해야 합니다. 중계 서버가 없어 일부 학교·회사 방화벽, 모바일망에서는 연결되지 않을 수 있습니다.</p>
-<h3>09. FX</h3>
+<p class="dim small">두 사람 모두 같은 v3.3 파일을 사용해야 합니다. 중계 서버가 없어 일부 학교·회사 방화벽, 모바일망에서는 연결되지 않을 수 있습니다.</p>
+<h3>10. FX</h3>
 <p>폭발 흔들림·섬광·파편, 포탄 연기, 이동 먼지, 바퀴 회전, 바람 줄기, 손상 연기, 헬기 애니메이션. [ FX ] 버튼 또는 운영체제의 동작 줄이기 설정으로 끌 수 있습니다.</p>
 </section>
 </div>
 </details>
-<footer>PHOSPHOR ARTILLERY 3.2 / 독립 구현 / 브라우저 내부 처리 / 외부 라이브러리·쿠키·저장 없음 / 온라인 STUN 사용은 선택</footer>
+<footer>PHOSPHOR ARTILLERY 3.3 / 독립 구현 / 브라우저 내부 처리 / 외부 라이브러리·쿠키·저장 없음 / 온라인 STUN 사용은 선택 / micro:bit는 Web Bluetooth로 직접 연결</footer>
 </main>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const canvas=$('battle'),ctx=canvas.getContext('2d');
 if(!ctx){$('error').textContent='Canvas를 사용할 수 없습니다.';return;}
-const W=1000,H=520,DT=1/90,GRAV=110,TARGET=3,SUDDEN=30,LIMIT=60,FUEL=48,SEG=8,DRIVE=72,HOLD_MS=110,SAMPLE=3,SPEED=162,MAXSTEP=3000,CHUNK=12000,VER=32;
+const W=1000,H=520,DT=1/90,GRAV=110,TARGET=3,SUDDEN=30,LIMIT=60,FUEL=48,SEG=8,DRIVE=72,HOLD_MS=110,SAMPLE=3,SPEED=162,MAXSTEP=3000,CHUNK=12000,VER=33;
 const WEAPONS={shell:{name:'기본탄',r:26,dmg:55},heavy:{name:'중포탄',r:45,dmg:80},split:{name:'분열탄',r:21,dmg:36},quake:{name:'지진탄',r:67,dmg:24},trap:{name:'함정 폭발',r:24,dmg:20}};
 const WKEYS=['shell','heavy','split','quake'],AMMO_CAP={heavy:4,split:4,quake:3};
 const SUPPLY={heavy:{mark:'H',name:'중포탄',w:12},split:{mark:'S',name:'분열탄',w:11},quake:{mark:'Q',name:'지진탄',w:8},repair:{mark:'+',name:'수리',w:12},shield:{mark:'O',name:'방어막',w:10},fuel:{mark:'F',name:'연료 2배',w:11},calm:{mark:'C',name:'무풍탄',w:9},scope:{mark:'L',name:'정밀 조준경',w:10},power:{mark:'P',name:'강화탄',w:8},trap:{mark:'!',name:'함정 상자',w:9}};
@@ -198,6 +218,7 @@ let S=null,fx=true,raf=0,lastFrame=0,lastLag=false,lastTurn='';
 let play=null,inbox=[],helis=[],seen=new Set(),seenPick=new Set(),blasts=[],particles=[],pops=[],streaks=[],shake=null,muzzleFx=null,wasDropping=false;
 let vis=[],visKey='',aiTimer=0,aiToken=0,aiMoving=false,pendingAct=false,pendingTimer=0;
 const hold={dir:0,timer:0},net={role:'off',pc:null,ch:null,open:false,chunks:new Map(),aimT:0};
+const mb={dev:null,ch:null,buf:'',pitch:0,roll:0,last:0,moveDir:0,acc:0,timer:0};
 const fxOn=()=>fx&&!motion.matches,active=()=>S?S.tanks.at(S.current):null,groundOf=(ter,x)=>ter[clamp(Math.round(x),0,W-1)];
 const sudden=st=>st.shots>SUDDEN,windText=w=>w===0?'무풍':(w>0?'오른쪽 ':'왼쪽 ')+Math.abs(w);
 const netOpen=()=>!!(net.ch&&net.ch.readyState==='open'),gameVisible=()=>!$('game').classList.contains('hidden');
@@ -660,7 +681,7 @@ function draw(now=performance.now()){
  ctx.textAlign='center';
  for(const p of pops){const e=now-p.start;ctx.globalAlpha=fxOn()?clamp(1-e/1300,0,1):1;ctx.font=p.big?'bold 14px monospace':'bold 16px monospace';ctx.fillStyle=p.big?'#b0ffb0':'#dcffdc';ctx.fillText(p.text,p.x,p.y-(fxOn()?e*.03:0));}
  ctx.globalAlpha=1;ctx.restore();
- ctx.font='12px monospace';ctx.textAlign='left';ctx.fillStyle='#277e36';ctx.fillText('PHOSPHOR / TERRAIN ENGINE 3.2',16,22);
+ ctx.font='12px monospace';ctx.textAlign='left';ctx.fillStyle='#277e36';ctx.fillText('PHOSPHOR / TERRAIN ENGINE 3.3',16,22);
  ctx.textAlign='center';ctx.fillStyle='#33ff33';ctx.fillText('WIND '+Math.abs(S.wind),W/2,20);
  const len=S.wind*4;
  if(len){const e=W/2+len/2,sg=Math.sign(len);ctx.strokeStyle='#33ff33';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-len/2,32);ctx.lineTo(e,32);ctx.lineTo(e-sg*6,27);ctx.moveTo(e,32);ctx.lineTo(e-sg*6,37);ctx.stroke();}
@@ -671,7 +692,7 @@ function setControls(on){for(const id of['angle','power','weapon','fire'])$(id).
 function statusText(){
  const t=active();
  if(S.phase==='over'){const w=S.winner>=0?S.tanks.at(S.winner):null,s=w?(S.matchOver?w.name+' 경기 승리!':w.name+' 라운드 승리!'):'무승부 라운드.';
-  if(S.mode==='online'&&!netOpen())return s+' 연결이 끊겼습니다.';return s+(S.matchOver?' ENTER: 새 경기':' ENTER: 다음 라운드');}
+  if(S.mode==='online'&&!netOpen())return s+' 연결이 끊겼습니다.';return s+(S.matchOver?' ENTER/로고 터치: 새 경기':' ENTER/로고 터치: 다음 라운드');}
  if(play||S.phase==='flight')return t.name+' 포격 중...';
  if(heliDropping())return '보급 헬기 접근 중... 투하 후 계속합니다.';
  if(S.mode==='online'&&!netOpen())return '온라인 연결이 끊겼습니다. F2 메뉴에서 다시 연결하세요.';
@@ -679,7 +700,7 @@ function statusText(){
  if(pendingAct)return '호스트 응답 대기 중...';
  const tail=' / 바람 '+windText(S.wind)+(sudden(S)?' / 피해 2배':'');
  if(isMine(S.current)){if(visLag())return t.name+' 이동 중...';const b=buffText(t);
-  return(S.mode==='online'?'당신 차례':t.name+' 차례')+'. 이동(A/D 누르기)·조준 후 발사(SPACE)'+tail+(b?' / 효과: '+b:'');}
+  return(S.mode==='online'?'당신 차례':t.name+' 차례')+'. 이동·조준 후 발사(SPACE / micro:bit A)'+tail+(b?' / 효과: '+b:'');}
  if(t.ai)return t.name+' (AI) 차례'+tail;
  return '상대('+t.name+') 차례 대기 중'+tail;
 }
@@ -707,7 +728,7 @@ function renderUI(){
  o.item(1).disabled=t.ammo.heavy<1;o.item(2).disabled=t.ammo.split<1;o.item(3).disabled=t.ammo.quake<1;
  if(!canUse(t,$('weapon').value))$('weapon').value='shell';
  setControls(mine);$('fire').disabled=!mine||lag;$('moveLeft').disabled=$('moveRight').disabled=!mine||t.fuel<1;
- const ra=$('roundAction');ra.classList.toggle('hidden',S.phase!=='over');ra.disabled=!canAdvance();ra.textContent=S.matchOver?'[ ENTER ] 새 경기':'[ ENTER ] 다음 라운드';
+ const ra=$('roundAction');ra.classList.toggle('hidden',S.phase!=='over');ra.disabled=!canAdvance();ra.textContent=S.matchOver?'[ ENTER / 로고 터치 ] 새 경기':'[ ENTER / 로고 터치 ] 다음 라운드';
  setText('status',statusText());renderLog();renderRoster();
  canvas.setAttribute('aria-label','포격 전장. '+S.tanks.map(x=>x.name+' 체력 '+x.hp).join(', ')+'. 바람 '+windText(S.wind)+'. 보급 상자 '+(S.crates.map(c=>SUPPLY[c.type].name).join(', ')||'없음')+'.');
 }
@@ -729,7 +750,7 @@ function renderSetup(){
  const L=clamp(Math.round(Number($('level').value))||5,1,10);
  setText('levelValue',String(L));setText('levelMeter','('+'#'.repeat(L)+'.'.repeat(10-L)+') '+RANKS.at(L-1));setText('levelDesc',levelDesc(L));
 }
-function resetClient(){stopHold();aiToken++;clearTimeout(aiTimer);clearTimeout(pendingTimer);if(play)clearTimeout(play.guard);play=null;inbox=[];helis=[];blasts=[];particles=[];pops=[];shake=null;muzzleFx=null;aiMoving=false;pendingAct=false;wasDropping=false;lastTurn='';vis=[];visKey='';seenPick.clear();}
+function resetClient(){stopHold();mb.moveDir=0;mb.acc=0;aiToken++;clearTimeout(aiTimer);clearTimeout(pendingTimer);if(play)clearTimeout(play.guard);play=null;inbox=[];helis=[];blasts=[];particles=[];pops=[];shake=null;muzzleFx=null;aiMoving=false;pendingAct=false;wasDropping=false;lastTurn='';vis=[];visKey='';seenPick.clear();}
 function showGame(){$('setup').classList.add('hidden');$('game').classList.remove('hidden');fail('');}
 function startLocal(){
  const m=setupMode();if(m==='online'){fail('온라인은 오른쪽 패널에서 연결이 완료되면 자동으로 시작됩니다.');return;}
@@ -852,7 +873,7 @@ function validRes(r,n){
  return true;
 }
 function handleMsg(m){
- if(m.t==='hello'){if(m.v!==VER)fail('상대의 게임 버전이 다릅니다. 같은 v3.2 파일을 사용하세요.');return;}
+ if(m.t==='hello'){if(m.v!==VER)fail('상대의 게임 버전이 다릅니다. 같은 v3.3 파일을 사용하세요.');return;}
  if(net.role==='host'){
   if(!S||S.mode!=='online')return;
   if(m.t==='act'){const err=applyAction(1,m.a);if(err)netSend({t:'err',m:err});return;}
@@ -898,9 +919,92 @@ function startHold(dir){
  tick();
 }
 function fireNow(){const t=active();if(!t||visLag())return;stopHold();request({type:'fire',angle:t.angle,power:t.power,weapon:$('weapon').value});}
+function cycleWeapon(){
+ const t=active();if(!t)return;
+ const cur=Math.max(0,WKEYS.indexOf($('weapon').value));
+ for(let k=1;k<=WKEYS.length;k++){const w=WKEYS.at((cur+k)%WKEYS.length);if(canUse(t,w)){$('weapon').value=w;fail('');setText('status',WEAPONS[w].name+' 선택');return;}}
+}
 function toggleHelp(){const h=$('help');h.open=!h.open;if(h.open)h.scrollIntoView({block:'nearest'});}
 function setFxLabel(){$('fxButton').setAttribute('aria-pressed',String(fx));$('fxButton').textContent='[ FX : '+(fx?'ON':'OFF')+' ]';}
 function clearFx(){shake=null;particles=[];muzzleFx=null;helis=[];streaks=[];wasDropping=false;}
+
+/* micro:bit (Web Bluetooth UART) */
+const MB_UART='6e400001-b5a3-f393-e0a9-e50e24dcca9e',MB_TX='6e400002-b5a3-f393-e0a9-e50e24dcca9e',MB_DEAD_PITCH=12,MB_DEAD_ROLL=20;
+const mbDecoder=new TextDecoder();
+function mbSay(s){setText('mbStatus',s);}
+function mbConnected(){return !!(mb.dev&&mb.dev.gatt&&mb.dev.gatt.connected);}
+function mbUI(){const on=mbConnected();$('mbButton').textContent=on?'[ micro:bit 해제 ]':'[ micro:bit 연결 ]';$('mbButton').setAttribute('aria-pressed',String(on));}
+function mbStopMove(){if(mb.moveDir&&hold.dir===mb.moveDir)stopHold();mb.moveDir=0;mb.acc=0;}
+function mbDisconnect(quiet){
+ const d=mb.dev,ch=mb.ch;mb.dev=null;mb.ch=null;mb.buf='';mbStopMove();clearInterval(mb.timer);mb.timer=0;
+ if(ch){try{ch.removeEventListener('characteristicvaluechanged',mbData);}catch(e){}}
+ if(d){d.removeEventListener('gattserverdisconnected',mbLost);try{if(d.gatt.connected)d.gatt.disconnect();}catch(e){}}
+ if(!quiet)mbSay('micro:bit 연결 해제됨');
+ setText('mbTilt','PITCH -- / ROLL --');mbUI();
+}
+function mbLost(){mbDisconnect(true);mbSay('micro:bit 연결이 끊겼습니다. 다시 연결하세요.');}
+async function mbConnect(){
+ if(mbConnected()){mbDisconnect(false);return;}
+ if(!navigator.bluetooth){mbSay('이 브라우저는 Web Bluetooth를 지원하지 않습니다. PC나 안드로이드의 Chrome 또는 Edge를 사용하세요.');return;}
+ if(!window.isSecureContext){mbSay('https 주소(GitHub Pages)에서 열어야 블루투스를 사용할 수 있습니다.');return;}
+ try{
+  mbSay('micro:bit 검색 중... 목록에서 BBC micro:bit를 선택하세요.');
+  const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'BBC micro:bit'}],optionalServices:[MB_UART]});
+  mb.dev=dev;dev.addEventListener('gattserverdisconnected',mbLost);
+  mbSay('연결 중...');
+  const server=await dev.gatt.connect();
+  const service=await server.getPrimaryService(MB_UART);
+  const ch=await service.getCharacteristic(MB_TX);
+  mb.ch=ch;ch.addEventListener('characteristicvaluechanged',mbData);
+  await ch.startNotifications();
+  mb.buf='';mb.last=0;mbStart();
+  mbSay('연결됨: '+(dev.name||'micro:bit'));mbUI();
+ }catch(e){
+  const msg=e&&e.name==='NotFoundError'?'장치 선택을 취소했습니다.':'연결 실패: '+(e&&e.message?e.message:String(e))+' / MakeCode의 bluetooth 확장, UART 서비스, No Pairing Required 설정을 확인하세요.';
+  mbDisconnect(true);mbSay(msg);
+ }
+}
+function mbData(e){
+ const v=e.target&&e.target.value;if(!v)return;
+ mb.buf+=mbDecoder.decode(v,{stream:true});
+ if(mb.buf.length>400)mb.buf=mb.buf.slice(-80);
+ const lines=mb.buf.split(/\r?\n/);mb.buf=lines.pop()||'';
+ for(const raw of lines){const s=raw.trim();if(s)mbCmd(s);}
+}
+function mbCmd(s){
+ if(s.startsWith('T,')){
+  const p=s.split(','),pi=Number(p.at(1)),ro=Number(p.at(2));
+  if(isNum(pi)&&isNum(ro)){mb.pitch=clamp(pi,-180,180);mb.roll=clamp(ro,-180,180);mb.last=performance.now();setText('mbTilt','PITCH '+Math.round(mb.pitch)+'° / ROLL '+Math.round(mb.roll)+'°');}
+  return;
+ }
+ const inGame=gameVisible()&&!!S;
+ if(s==='A'){setText('mbKey','입력: A 발사');if(inGame&&canAct())fireNow();return;}
+ if(s==='B'){setText('mbKey','입력: B 포탄 변경');if(inGame&&canAct())cycleWeapon();return;}
+ if(s==='AB'){setText('mbKey','입력: A+B 시작');
+  if(!$('setup').classList.contains('hidden')){if(setupMode()==='online')mbSay('온라인은 연결 패널에서 연결이 끝나면 자동으로 시작됩니다.');else startLocal();}
+  return;}
+ if(s==='L'){setText('mbKey','입력: 로고 터치');if(inGame&&S.phase==='over')request({type:'next'});return;}
+}
+function mbStart(){
+ clearInterval(mb.timer);let prev=performance.now();
+ mb.timer=setInterval(()=>{const now=performance.now(),dt=Math.min(.2,(now-prev)/1000);prev=now;mbTick(dt,now);},50);
+}
+function mbTick(dt,now){
+ const fresh=mb.last>0&&now-mb.last<600;
+ const ok=fresh&&gameVisible()&&canAct();
+ let dir=0;
+ if(ok){const r=mb.roll*($('mbRollInv').checked?-1:1);if(r>MB_DEAD_ROLL)dir=1;else if(r<-MB_DEAD_ROLL)dir=-1;}
+ if(dir!==mb.moveDir){if(mb.moveDir!==0&&hold.dir===mb.moveDir)stopHold();mb.moveDir=dir;if(dir)startHold(dir);}
+ if(!ok){mb.acc=0;return;}
+ const p=mb.pitch*($('mbPitchInv').checked?-1:1),ap=Math.abs(p);
+ if(ap<=MB_DEAD_PITCH){mb.acc=0;return;}
+ const rate=Math.min(70,(ap-MB_DEAD_PITCH)*2.5);
+ mb.acc+=Math.sign(p)*rate*dt;
+ const step=Math.trunc(mb.acc);
+ if(step){mb.acc-=step;const t=active();if(!t)return;setAim(t,t.angle+step,t.power);updateAimLabels();draw();sendAim();}
+}
+
+/* 이벤트 */
 for(const [id,dir] of [['moveLeft',-1],['moveRight',1]]){
  const b=$(id);
  b.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(x){}startHold(dir);});
@@ -911,6 +1015,7 @@ for(const [id,dir] of [['moveLeft',-1],['moveRight',1]]){
 $('startButton').addEventListener('click',startLocal);$('hostButton').addEventListener('click',hostCreate);$('joinButton').addEventListener('click',guestJoin);
 $('applyButton').addEventListener('click',applyCode);$('copyButton').addEventListener('click',copyCode);
 $('helpButton').addEventListener('click',toggleHelp);$('menuButton').addEventListener('click',showMenu);
+$('mbButton').addEventListener('click',mbConnect);
 $('fxButton').addEventListener('click',()=>{fx=!fx;if(!fxOn())clearFx();setFxLabel();if(S){renderUI();draw();kick();}});
 motion.addEventListener('change',()=>{if(!fxOn())clearFx();if(S){renderUI();draw();}});
 document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change',renderSetup));
@@ -944,9 +1049,9 @@ document.addEventListener('keydown',e=>{
   if(k==='angle')setAim(t,t.angle+d,t.power);else setAim(t,t.angle,t.power+d);updateAimLabels();draw();sendAim();}
 });
 document.addEventListener('keyup',e=>{if((e.code==='KeyA'&&hold.dir===-1)||(e.code==='KeyD'&&hold.dir===1))stopHold();});
-window.addEventListener('blur',stopHold);
-window.addEventListener('pagehide',closeNet);
-setFxLabel();renderSetup();draw();
+window.addEventListener('blur',()=>{if(hold.dir!==mb.moveDir||!mb.moveDir)stopHold();});
+window.addEventListener('pagehide',()=>{closeNet();mbDisconnect(true);});
+setFxLabel();renderSetup();mbUI();draw();
 })();
 </script>
 </body></html>
