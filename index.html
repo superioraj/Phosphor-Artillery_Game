@@ -1005,7 +1005,7 @@ async function mbConnect(){
   const ch=await service.getCharacteristic(MB_TX);
   mb.ch=ch;ch.addEventListener('characteristicvaluechanged',mbData);
   await ch.startNotifications();
-  mb.buf='';mb.last=0;mbStart();
+  mb.buf='';mb.last=0;mb.a=false;mb.b=false;mbStart();
   mbSay('연결됨: '+(dev.name||'micro:bit'));mbUI();
  }catch(e){
   const msg=e&&e.name==='NotFoundError'?'장치 선택을 취소했습니다.':'연결 실패: '+(e&&e.message?e.message:String(e))+' / MakeCode의 bluetooth 확장, UART 서비스, No Pairing Required 설정을 확인하세요.';
@@ -1020,14 +1020,14 @@ function mbData(e){
  for(const raw of lines){const s=raw.trim();if(s)mbCmd(s);}
 }
 function mbCmd(s){
+ const showBtn=()=>setText('mbTilt','PITCH '+Math.round(mb.pitch)+'° / ROLL '+Math.round(mb.roll)+'° / BTN '+(mb.a?'A':'-')+(mb.b?'B':'-'));
  if(s.startsWith('T,')){
   const p=s.split(','),pi=Number(p.at(1)),ro=Number(p.at(2));
-  if(isNum(pi)&&isNum(ro)){
-   mb.pitch=clamp(pi,-180,180);mb.roll=clamp(ro,-180,180);mb.a=p.at(3)==='1';mb.b=p.at(4)==='1';mb.last=performance.now();
-   setText('mbTilt','PITCH '+Math.round(mb.pitch)+'° / ROLL '+Math.round(mb.roll)+'° / BTN '+(mb.a?'A':'-')+(mb.b?'B':'-'));
-  }
+  if(isNum(pi)&&isNum(ro)){mb.pitch=clamp(pi,-180,180);mb.roll=clamp(ro,-180,180);mb.last=performance.now();showBtn();}
   return;
  }
+ if(s==='A1'||s==='A0'){mb.a=s==='A1';showBtn();return;}
+ if(s==='B1'||s==='B0'){mb.b=s==='B1';showBtn();return;}
  if(s==='AB'){
   if(!$('setup').classList.contains('hidden')){
    setText('mbKey','입력: A+B 시작');
