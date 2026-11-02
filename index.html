@@ -167,7 +167,7 @@ kbd{display:inline-block;border:1px solid var(--fg);padding:0 5px;font:inherit;f
 <tr><td>3 분열탄</td><td>최고점에서 3갈래 / 반경 21 / 각 36</td><td>라운드 1발 (최대 4)</td></tr>
 <tr><td>4 지진탄</td><td>반경 67 구덩이 / 피해 24 / 추락 유도</td><td>보급만 (최대 3)</td></tr>
 </table></div>
-<p class="dim small">폭발은 둥근 구덩이를 만들고, 위쪽 흙은 아래로 내려앉습니다.</p>
+<p class="dim small">폭발은 둥근 구덩이를 만들고, 위쪽 흙은 아래로 내려앉습니다. 구덩이에 빠져도 벽을 타고 빠져나올 수 있지만, 아주 높은 절벽은 오를 수 없습니다.</p>
 <h3>05. 전장 규칙</h3>
 <ul><li>이동 연료: 매 차례 48 (연료 2배 시 96)</li><li>바람은 매 차례 조금씩 변함</li><li>발밑 지형이 파이면 추락 피해</li><li>30발 이후 모든 피해 2배 (서든데스)</li><li>60발 도달 시 무승부</li><li>포구 앞 점선 = 초반 탄도 가이드</li></ul>
 <h3>06. micro:bit 제어</h3>
@@ -230,7 +230,7 @@ let vis=[],visKey='',aiTimer=0,aiToken=0,aiMoving=false,pendingAct=false,pending
 const hold={dir:0,timer:0};
 const PEER_PREFIX='phosphor-art35-',CODE_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',CODE_LEN=5;
 const net={role:'off',peer:null,ch:null,pending:null,accepted:false,code:'',chunks:new Map(),aimT:0};
-const mb={dev:null,ch:null,buf:'',pitch:0,roll:0,a:false,b:false,last:0,want:0,wantSince:0,moveDir:0,accA:0,accP:0,timer:0};
+const mb={dev:null,ch:null,buf:'',pitch:0,roll:0,a:false,b:false,last:0,want:0,wantSince:0,moveAt:0,moveDir:0,accA:0,accP:0,timer:0};
 const fxOn=()=>!motion.matches,active=()=>S?S.tanks.at(S.current):null,groundOf=(ter,x)=>ter[clamp(Math.round(x),0,W-1)];
 const sudden=st=>st.shots>SUDDEN,windText=w=>w===0?'무풍':(w>0?'오른쪽 ':'왼쪽 ')+Math.abs(w);
 const netOpen=()=>!!(net.ch&&net.ch.open&&net.accepted),gameVisible=()=>!$('game').classList.contains('hidden');
@@ -346,9 +346,11 @@ function applyAction(idx,a){
  if(a.type==='fire')return doFire(idx,a);
  return '알 수 없는 명령입니다.';
 }
+/* 탱크 폭(16px)의 평균 지면 높이: 구덩이 벽을 타고 올라올 수 있게 함 */
+function avgG(ter,x){let s=0,n=0;for(let k=-8;k<=8;k+=2){s+=groundOf(ter,x+k);n++;}return s/n;}
 function stepBlock(st,t,x,nx){
  if(nx<15||nx>W-15)return '전장 끝입니다.';
- if(groundOf(st.terrain,nx)<groundOf(st.terrain,x)-2)return '경사가 너무 가파릅니다.';
+ if(avgG(st.terrain,nx)<avgG(st.terrain,x)-3)return '경사가 너무 가파릅니다.';
  if(st.tanks.some(o=>o!==t&&o.hp>0&&Math.abs(o.x-nx)<26&&Math.abs(o.x-nx)<Math.abs(o.x-x)))return '다른 전차가 막고 있습니다.';
  return '';
 }
@@ -762,7 +764,7 @@ function renderSetup(){
  const L=clamp(Math.round(Number($('level').value))||5,1,10);
  setText('levelValue',String(L));setText('levelMeter','('+'#'.repeat(L)+'.'.repeat(10-L)+') '+RANKS.at(L-1));setText('levelDesc',levelDesc(L));
 }
-function resetClient(){stopHold();mb.moveDir=0;mb.want=0;mb.accA=0;mb.accP=0;aiToken++;clearTimeout(aiTimer);clearTimeout(pendingTimer);if(play)clearTimeout(play.guard);play=null;inbox=[];helis=[];blasts=[];particles=[];pops=[];shake=null;muzzleFx=null;aiMoving=false;pendingAct=false;wasDropping=false;lastTurn='';vis=[];visKey='';seenPick.clear();}
+function resetClient(){stopHold();mb.moveDir=0;mb.want=0;mb.moveAt=0;mb.accA=0;mb.accP=0;aiToken++;clearTimeout(aiTimer);clearTimeout(pendingTimer);if(play)clearTimeout(play.guard);play=null;inbox=[];helis=[];blasts=[];particles=[];pops=[];shake=null;muzzleFx=null;aiMoving=false;pendingAct=false;wasDropping=false;lastTurn='';vis=[];visKey='';seenPick.clear();}
 function showGame(){$('setup').classList.add('hidden');$('game').classList.remove('hidden');fail('');}
 function startLocal(){
  const m=setupMode();if(m==='online'){fail('온라인은 오른쪽 패널에서 연결이 완료되면 자동으로 시작됩니다.');return;}
@@ -980,7 +982,7 @@ const mbDecoder=new TextDecoder();
 function mbSay(s){setText('mbStatus',s);}
 function mbConnected(){return !!(mb.dev&&mb.dev.gatt&&mb.dev.gatt.connected);}
 function mbUI(){const on=mbConnected();$('mbButton').textContent=on?'[ micro:bit 해제 ]':'[ micro:bit 연결 ]';$('mbButton').setAttribute('aria-pressed',String(on));}
-function mbStopMove(){if(mb.moveDir&&hold.dir===mb.moveDir)stopHold();mb.moveDir=0;mb.want=0;mb.accA=0;mb.accP=0;}
+function mbStopMove(){if(mb.moveDir&&hold.dir===mb.moveDir)stopHold();mb.moveDir=0;mb.want=0;mb.moveAt=0;mb.accA=0;mb.accP=0;}
 function mbDisconnect(quiet){
  const d=mb.dev,ch=mb.ch;mb.dev=null;mb.ch=null;mb.buf='';mb.a=false;mb.b=false;mbStopMove();clearInterval(mb.timer);mb.timer=0;
  if(ch){try{ch.removeEventListener('characteristicvaluechanged',mbData);}catch(e){}}
@@ -1050,15 +1052,21 @@ function mbTick(dt,now){
  const fresh=mb.last>0&&now-mb.last<600;
  const myTurn=fresh&&gameVisible()&&!!S&&S.phase==='aim'&&isMine(S.current)&&(S.mode!=='online'||netOpen());
  const ok=myTurn&&canAct();
- /* 이동: A 누르고 있기 = 왼쪽, B 누르고 있기 = 오른쪽 (둘 다 누르면 이동 안 함) */
+ /* 이동: hold 장치를 쓰지 않고 누르고 있는 동안 직접 요청 */
  let want=0;
  if(myTurn){if(mb.a&&!mb.b)want=-1;else if(mb.b&&!mb.a)want=1;}
- if(want!==mb.want){mb.want=want;mb.wantSince=now;}
- const dir=want&&now-mb.wantSince>=MB_HOLD_DELAY?want:0;
- const cur=active();
- if(dir&&cur&&cur.fuel>0){if(hold.dir!==dir)startHold(dir);}
- else if(mb.moveDir&&hold.dir===mb.moveDir)stopHold();
- mb.moveDir=dir;
+ if(want!==mb.want){mb.want=want;mb.wantSince=now;mb.moveAt=0;if(!want)setText('mbKey','');}
+ if(want&&now-mb.wantSince>=MB_HOLD_DELAY&&now>=(mb.moveAt||0)){
+  mb.moveAt=now+HOLD_MS;
+  const t=active();
+  if(!t)setText('mbKey','이동 불가: 전차 없음');
+  else if(t.fuel<1)setText('mbKey','이동 불가: 연료 없음');
+  else{
+   const r=request({type:'move',dir:want});
+   setText('mbKey',r==='skip'?'이동 대기: 다른 동작 처리 중':r?'이동 불가: '+r:'이동: '+(want<0?'왼쪽':'오른쪽'));
+  }
+ }
+ mb.moveDir=0;
  if(!ok){mb.accA=0;mb.accP=0;return;}
  const t=active();if(!t)return;
  let changed=false;
